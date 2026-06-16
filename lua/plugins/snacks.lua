@@ -3,6 +3,16 @@ return {
   {
     "folke/snacks.nvim",
     opts = {
+      explorer = {
+        hidden = true,
+        ignored = true,
+        follow = true,
+      },
+      picker = {
+        hidden = true,
+        ignored = true,
+        follow = true,
+      },
       dashboard = {
         preset = {
           header = [[
@@ -14,6 +24,28 @@ return {
   ╚═══╝  ╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝
           ]],
         },
+      },
+    },
+    keys = {
+      -- <leader>e: open at current file's directory
+      {
+        "<leader>e",
+        function()
+          Snacks.explorer.open({
+            cwd = vim.fn.expand("%:p:h"),
+          })
+        end,
+        desc = "Explorer (file dir)",
+      },
+      -- <leader>E: open at CWD (project root)
+      {
+        "<leader>E",
+        function()
+          Snacks.explorer.open({
+            cwd = vim.fn.getcwd(),
+          })
+        end,
+        desc = "Explorer (cwd)",
       },
     },
   },
