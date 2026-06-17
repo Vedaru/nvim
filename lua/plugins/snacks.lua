@@ -47,6 +47,11 @@ return {
         end,
         desc = "Explorer (cwd)",
       },
+      -- 查找类：基于 snacks.picker
+      { "<leader>ff", function() require("snacks.picker").files({ cwd = vim.fn.expand("%:p:h") }) end, silent = true, desc = "Find files (current dir)" },
+      { "<leader>fg", function() require("snacks.picker").grep() end, silent = true, desc = "Live grep" },
+      { "<leader>fb", function() require("snacks.picker").buffers() end, silent = true, desc = "Find buffers" },
+      { "<leader>fr", function() require("snacks.picker").recent() end, silent = true, desc = "Recent files" },
     },
   },
 }

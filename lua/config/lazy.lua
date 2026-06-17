@@ -18,6 +18,14 @@ require("lazy").setup({
   spec = {
     -- add LazyVim and import its plugins
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+    -- LazyVim 官方语言扩展（必须在自定义 plugins 之前导入）
+    -- 自动配置 LSP、格式化、Treesitter；Lua 已由 LazyVim 默认内置
+    { import = "lazyvim.plugins.extras.lang.json" },
+    { import = "lazyvim.plugins.extras.lang.yaml" },
+    { import = "lazyvim.plugins.extras.lang.toml" },
+    { import = "lazyvim.plugins.extras.lang.markdown" },
+    { import = "lazyvim.plugins.extras.lang.docker" },
+    { import = "lazyvim.plugins.extras.lang.git" },
     -- import/override with your plugins
     { import = "plugins" },
   },
