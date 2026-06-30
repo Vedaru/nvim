@@ -48,10 +48,38 @@ return {
         desc = "Explorer (cwd)",
       },
       -- 查找类：基于 snacks.picker
-      { "<leader>ff", function() require("snacks.picker").files({ cwd = vim.fn.expand("%:p:h") }) end, silent = true, desc = "Find files (current dir)" },
-      { "<leader>fg", function() require("snacks.picker").grep() end, silent = true, desc = "Live grep" },
-      { "<leader>fb", function() require("snacks.picker").buffers() end, silent = true, desc = "Find buffers" },
-      { "<leader>fr", function() require("snacks.picker").recent() end, silent = true, desc = "Recent files" },
+      {
+        "<leader>ff",
+        function()
+          require("snacks.picker").files({ cwd = vim.fn.expand("%:p:h") })
+        end,
+        silent = true,
+        desc = "Find files (current dir)",
+      },
+      {
+        "<leader>fg",
+        function()
+          require("snacks.picker").grep()
+        end,
+        silent = true,
+        desc = "Live grep",
+      },
+      {
+        "<leader>fb",
+        function()
+          require("snacks.picker").buffers()
+        end,
+        silent = true,
+        desc = "Find buffers",
+      },
+      {
+        "<leader>fr",
+        function()
+          require("snacks.picker").recent()
+        end,
+        silent = true,
+        desc = "Recent files",
+      },
       -- <leader>fF: 用 Everything (es.exe) 实时搜索【整台电脑】的文件名
       {
         "<leader>fF",
@@ -59,7 +87,10 @@ return {
           local instance = "1.5a" -- Everything 1.5 alpha 的命名实例
           local es = vim.fn.exepath("es")
           if es == "" then
-            vim.notify("Everything CLI (es.exe) not found. Make sure it is installed and on your PATH.", vim.log.levels.ERROR)
+            vim.notify(
+              "Everything CLI (es.exe) not found. Make sure it is installed and on your PATH.",
+              vim.log.levels.ERROR
+            )
             return
           end
 
