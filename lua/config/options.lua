@@ -3,6 +3,25 @@
 -- 这里只放对 LazyVim 默认值的增强/覆盖
 
 local opt = vim.opt
+local g = vim.g
+
+-- ══════════════════════════════════════════════════════════════════════
+-- ⚡ Startup: skip legacy provider detection (avoids slow shell calls on Windows)
+--    These are for :python3, :ruby, :perl, :node — no modern plugin uses them
+-- ══════════════════════════════════════════════════════════════════════
+g.loaded_python3_provider = 0
+g.loaded_ruby_provider = 0
+g.loaded_perl_provider = 0
+g.loaded_node_provider = 0
+
+-- ══════════════════════════════════════════════════════════════════════
+-- ⚡ Runtime: pure performance, zero user-visible change
+-- ══════════════════════════════════════════════════════════════════════
+-- Regex engine: 0=auto-select (uses faster engine when pattern permits)
+opt.regexpengine = 0
+-- Keycode timeout: how long nvim waits to distinguish <Esc> from <M- or <A-
+-- Default 50 → 10 for instant Esc response
+opt.ttimeoutlen = 10
 
 -- ── 命令行补全弹出菜单（方向键 / Ctrl-N/P 可用）────────────────────
 opt.wildmenu = true

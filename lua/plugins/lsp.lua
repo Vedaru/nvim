@@ -1,4 +1,5 @@
 --~/.config/nvim/lua/plugins/lsp.lua
+-- ⚡ LazyVim already lazy-loads LSP on LspAttach — just override opts
 return {
   {
     "neovim/nvim-lspconfig",
@@ -6,8 +7,6 @@ return {
       diagnostics = {
         -- 去掉下划线，保留其他提示（sign/s虚浮窗）
         underline = false,
-        -- 或只去掉 Error 的下划线，保留 Warning 等
-        -- underline = { severity = { min = vim.diagnostic.severity.WARN } },
       },
     },
   },

@@ -1,8 +1,10 @@
 -- 补全（blink.cmp）键位定制
 -- 主补全：Tab 确认、上下方向键选择、Enter 仅换行（不确认）
 -- 命令行：上下方向键选择候选、Tab 确认
+-- ⚡ Lazy load on first insert or cmdline entry
 return {
   "saghen/blink.cmp",
+  event = { "InsertEnter", "CmdlineEnter" },
   opts = {
     keymap = {
       -- super-tab 预设：<Tab> 接受补全、<Up>/<Down> 选择、不绑定 <CR>

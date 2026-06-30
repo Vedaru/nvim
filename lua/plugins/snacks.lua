@@ -2,6 +2,8 @@
 return {
   {
     "folke/snacks.nvim",
+    -- ⚡ Lazy load: deferred until UI idle (after startup)
+    event = "VeryLazy",
     opts = {
       explorer = {
         hidden = true,
@@ -13,6 +15,24 @@ return {
         ignored = true,
         follow = true,
       },
+      -- ⚡ Perf: reduce per-keystroke overhead
+      scope = {
+        enabled = true,
+        debounce = 200, -- was 30ms → 200ms. Treesitter tree traversal on CursorMoved
+                        -- now fires 5x/sec max instead of 33x/sec. Scope indicator
+                        -- updates slightly less fluid but still instant to human eyes.
+      },
+      words = {
+        enabled = true,
+        modes = { "n" }, -- was {"n","i","c"}. No LSP highlighting in insert/command
+                         -- mode — useless there and causes lag while typing.
+      },
+      indent = { enabled = true },
+      input = { enabled = true },
+      notifier = { enabled = true },
+      scroll = { enabled = true },
+      statuscolumn = { enabled = false }, -- we set this in options.lua
+      toggle = { map = LazyVim.safe_keymap_set },
       dashboard = {
         preset = {
           header = [[
@@ -100,7 +120,7 @@ return {
             return vim.v.shell_error == 0
           end
 
-          -- 若没运行则通过“最高权限”计划任务无 UAC 启动它，并标记“是我们启动的”
+          -- 若没运行则通过"最高权限"计划任务无 UAC 启动它，并标记"是我们启动的"
           -- （计划任务 EverythingStart / EverythingExit 需用管理员 PowerShell 一次性创建）
           local started_by_us = false
           if not es_ready() then

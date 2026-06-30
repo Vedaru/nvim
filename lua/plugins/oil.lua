@@ -1,7 +1,12 @@
 -- Oil: terminal-style file manager
+-- ⚡ Lazy loaded — triggers on :Oil command or <leader>o keymap
 return {
   "stevearc/oil.nvim",
   dependencies = { "nvim-tree/nvim-web-devicons" },
+  cmd = "Oil",
+  keys = {
+    { "<leader>o", desc = "Oil (current file dir)" },
+  },
   opts = {
     view_options = {
       show_hidden = true,
@@ -49,7 +54,7 @@ return {
           local full_path = dir .. entry.name
           oil.close()
           vim.cmd("silent! source " .. vim.fn.fnameescape(full_path))
-          local display_name = entry.name:gsub("%.vim$", ""):gsub("%+", "/")
+          local display_name = entry.name:gsub("%.vim$", ""):gsub("%%", "/")
           display_name = display_name:gsub("^([A-Za-z])/", "%1:/")
           vim.notify("Loaded session: " .. display_name)
         else
@@ -66,8 +71,8 @@ return {
         end
         local dir = oil.get_current_dir()
         local abs_path = dir .. entry.name
-        -- Normalize backslashes, then decode + -> /
-        local display_path = abs_path:gsub("\\", "/"):gsub("%+", "/")
+        -- Normalize backslashes, then decode % -> /
+        local display_path = abs_path:gsub("\\", "/"):gsub("%%", "/")
         -- Restore drive letter colon (D/... -> D:/...)
         display_path = display_path:gsub("^([A-Za-z])/", "%1:/")
         vim.fn.setreg("+", display_path)
