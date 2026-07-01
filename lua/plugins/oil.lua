@@ -34,7 +34,7 @@ return {
         local oil = require("oil")
         local entry = oil.get_cursor_entry()
 
-        if not entry or entry.type == "directory" then
+        if not entry or not entry.name or entry.type == "directory" then
           -- directories: navigate in (normal behavior)
           require("oil").select()
           return

@@ -25,6 +25,22 @@ return {
           ]],
         },
       },
+      -- Disable auto_insert so terminal stays in normal mode after <Esc><Esc>,
+      -- allowing which-key's <Space> trigger to work.
+      -- Replace LazyVim's buggy term_nav() mappings with direct <cmd> variants.
+      -- Must include expr=true because snacks wraps string RHS in a function
+      -- whose return value is ignored without it.
+      terminal = {
+        auto_insert = false,
+        win = {
+          keys = {
+            nav_h = { "<C-h>", "<cmd>wincmd h<cr>", desc = "Go to Left Window", mode = "t", expr = true },
+            nav_j = { "<C-j>", "<cmd>wincmd j<cr>", desc = "Go to Lower Window", mode = "t", expr = true },
+            nav_k = { "<C-k>", "<cmd>wincmd k<cr>", desc = "Go to Upper Window", mode = "t", expr = true },
+            nav_l = { "<C-l>", "<cmd>wincmd l<cr>", desc = "Go to Right Window", mode = "t", expr = true },
+          },
+        },
+      },
     },
     keys = {
       -- <leader>e: open at current file's directory
