@@ -12,6 +12,13 @@ return {
         hidden = true,
         ignored = true,
         follow = true,
+        sources = {
+          git_diff = {
+            -- Suppress "Command failed" noise when outside a git repo.
+            -- The picker shows "No results" anyway — no need for a red error.
+            notify = false,
+          },
+        },
       },
       dashboard = {
         preset = {
