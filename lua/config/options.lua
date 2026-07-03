@@ -50,3 +50,8 @@ opt.termguicolors = true
 opt.fillchars:append({ eob = " " }) -- 隐藏行尾的 ~
 opt.list = true
 opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+
+-- ── Session ────────────────────────────────────────────────────────
+-- 不保存 terminal buffer（恢复时是死的），保留 local options
+vim.opt.sessionoptions:remove("terminal")
+vim.opt.sessionoptions:append("localoptions")

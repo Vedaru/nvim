@@ -32,3 +32,12 @@ vim.api.nvim_create_autocmd("BufReadPre", {
     end
   end,
 })
+
+-- Makefile / Go 必须用 real tab，不用空格缩进
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("real_tabs"),
+  pattern = { "make", "gomod", "go" },
+  callback = function()
+    vim.opt_local.expandtab = false
+  end,
+})
