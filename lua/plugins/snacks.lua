@@ -47,8 +47,10 @@ return {
       -- Replace LazyVim's buggy term_nav() mappings with direct <cmd> variants.
       -- Must include expr=true because snacks wraps string RHS in a function
       -- whose return value is ignored without it.
+      -- auto_close=false: suppress "Terminal exited" notification on session switch
       terminal = {
         auto_insert = false,
+        auto_close = false,
         win = {
           keys = {
             nav_h = { "<C-h>", "<cmd>wincmd h<cr>", desc = "Go to Left Window", mode = "t", expr = true },
