@@ -4,8 +4,9 @@ return {
     "neovim/nvim-lspconfig",
     opts = {
       diagnostics = {
-        -- 去掉下划线，保留其他提示（sign/s虚浮窗）
+        -- 去掉下划线，保留 sign 和 virtual_text
         underline = false,
+        virtual_text = false,
         -- 或只去掉 Error 的下划线，保留 Warning 等
         -- underline = { severity = { min = vim.diagnostic.severity.WARN } },
       },
