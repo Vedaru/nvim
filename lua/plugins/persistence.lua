@@ -49,6 +49,7 @@ return {
         if c == 1 then vim.cmd("silent! wa") elseif c ~= 2 then return end
       end
       vim.cmd("silent! %bdelete!")
+      vim.api.nvim_echo({}, false, {}) -- clear terminal exit messages
       P._active_dir = dirname(file)
       P.fire("LoadPre")
       vim.cmd("silent! source " .. e(file))
