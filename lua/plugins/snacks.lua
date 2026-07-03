@@ -71,6 +71,21 @@ return {
         desc = "Explorer (cwd)",
       },
       -- 查找类：基于 snacks.picker
+      -- Resolve git root from buffer path (not :pwd, which may be stale).
+      {
+        "<leader>gd",
+        function()
+          Snacks.picker.git_diff({ cwd = vim.fs.root(vim.api.nvim_buf_get_name(0), ".git") })
+        end,
+        desc = "Git Diff (hunks)",
+      },
+      {
+        "<leader>gD",
+        function()
+          Snacks.picker.git_diff({ cwd = vim.fs.root(vim.api.nvim_buf_get_name(0), ".git"), base = "origin", group = true })
+        end,
+        desc = "Git Diff (origin)",
+      },
       {
         "<leader>ff",
         function()
