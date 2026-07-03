@@ -1,4 +1,14 @@
 -- ~/.config/nvim/lua/plugins/snacks.lua
+local project_root = function()
+  local ok, P = pcall(require, "persistence")
+  if ok and P._active_dir then return P._active_dir end
+  local buf = vim.api.nvim_buf_get_name(0)
+  if vim.bo[0].buftype == "" and buf ~= "" then
+    return vim.fs.root(buf, ".git") or vim.fn.fnamemodify(buf, ":h")
+  end
+  return vim.fn.getcwd()
+end
+
 return {
   {
     "folke/snacks.nvim",
@@ -50,7 +60,7 @@ return {
       },
     },
     keys = {
-      -- <leader>e: toggle explorer. Root: session dir > git root > buffer dir > cwd
+      -- <leader>e: toggle explorer at project root
       {
         "<leader>e",
         function()
@@ -59,12 +69,7 @@ return {
               return vim.api.nvim_win_close(win, true)
             end
           end
-          local ok, P = pcall(require, "persistence")
-          local buf = vim.api.nvim_buf_get_name(0)
-          local root = (ok and P._active_dir)
-            or (vim.bo[0].buftype == "" and buf ~= "" and (vim.fs.root(buf, ".git") or vim.fn.fnamemodify(buf, ":h")))
-            or vim.fn.getcwd()
-          Snacks.explorer.open({ cwd = root })
+          Snacks.explorer.open({ cwd = project_root() })
         end,
         desc = "Toggle Explorer",
       },
@@ -78,39 +83,36 @@ return {
         end,
         desc = "Explorer (cwd)",
       },
-      -- 查找类：基于 snacks.picker
-      -- Resolve git root from buffer path (not :pwd, which may be stale).
+      -- 查找类：基于 snacks.picker，统一使用 project_root()
       {
         "<leader>gd",
         function()
-          Snacks.picker.git_diff({ cwd = vim.fs.root(vim.api.nvim_buf_get_name(0), ".git") })
+          Snacks.picker.git_diff({ cwd = project_root() })
         end,
         desc = "Git Diff (hunks)",
       },
       {
         "<leader>gD",
         function()
-          Snacks.picker.git_diff({ cwd = vim.fs.root(vim.api.nvim_buf_get_name(0), ".git"), base = "origin", group = true })
+          Snacks.picker.git_diff({ cwd = project_root(), base = "origin", group = true })
         end,
         desc = "Git Diff (origin)",
       },
       {
         "<leader>ff",
         function()
-          require("snacks.picker").files({ cwd = vim.fn.expand("%:p:h") })
+          require("snacks.picker").files({ cwd = project_root() })
         end,
         silent = true,
-        desc = "Find files (current dir)",
+        desc = "Find files",
       },
       {
         "<leader>fg",
         function()
-          require("snacks.picker").grep({
-            cwd = vim.fs.root(vim.api.nvim_buf_get_name(0), ".git") or vim.fn.expand("%:p:h"),
-          })
+          require("snacks.picker").grep({ cwd = project_root() })
         end,
         silent = true,
-        desc = "Live grep (git root)",
+        desc = "Live grep",
       },
       {
         "<leader>fb",
