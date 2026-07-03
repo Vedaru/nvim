@@ -73,11 +73,8 @@ return {
 
     P.save = function(save_opts)
       save_opts = save_opts or {}
-      if save_opts.cwd then P._active_dir = save_opts.cwd
-      elseif not P._active_dir then
-        local b = vim.api.nvim_buf_get_name(0)
-        P._active_dir = b ~= "" and (vim.fs.root(b, { ".git" }) or vim.fn.fnamemodify(b, ":p:h")) or vim.fn.getcwd()
-      end
+      if save_opts.cwd then P._active_dir = save_opts.cwd end
+      if not P._active_dir then return end -- only save when a session is loaded
       vim.cmd("mks! " .. e(P.current(save_opts)))
     end
 

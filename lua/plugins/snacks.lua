@@ -6,7 +6,7 @@ return {
       explorer = {
         hidden = true,
         ignored = true,
-        follow = true,
+        follow = false, -- pin at git root; never chase buffers
       },
       picker = {
         hidden = true,
@@ -50,17 +50,25 @@ return {
       },
     },
     keys = {
-      -- <leader>e: open at current file's directory
+      -- <leader>e: toggle explorer. Root: session dir > git root > buffer dir > cwd
       {
         "<leader>e",
         function()
-          Snacks.explorer.open({
-            cwd = vim.fn.expand("%:p:h"),
-          })
+          for _, win in ipairs(vim.api.nvim_list_wins()) do
+            if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "snacks_explorer" then
+              return vim.api.nvim_win_close(win, true)
+            end
+          end
+          local ok, P = pcall(require, "persistence")
+          local buf = vim.api.nvim_buf_get_name(0)
+          local root = (ok and P._active_dir)
+            or (vim.bo[0].buftype == "" and buf ~= "" and (vim.fs.root(buf, ".git") or vim.fn.fnamemodify(buf, ":h")))
+            or vim.fn.getcwd()
+          Snacks.explorer.open({ cwd = root })
         end,
-        desc = "Explorer (file dir)",
+        desc = "Toggle Explorer",
       },
-      -- <leader>E: open at CWD (project root)
+      -- <leader>E: open explorer at CWD (fallback)
       {
         "<leader>E",
         function()
@@ -97,10 +105,12 @@ return {
       {
         "<leader>fg",
         function()
-          require("snacks.picker").grep()
+          require("snacks.picker").grep({
+            cwd = vim.fs.root(vim.api.nvim_buf_get_name(0), ".git") or vim.fn.expand("%:p:h"),
+          })
         end,
         silent = true,
-        desc = "Live grep",
+        desc = "Live grep (git root)",
       },
       {
         "<leader>fb",
