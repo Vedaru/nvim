@@ -31,3 +31,6 @@ map("n", "<C-d>", "<C-d>zz", { desc = "下翻半页并居中" })
 map("n", "<C-u>", "<C-u>zz", { desc = "上翻半页并居中" })
 map("n", "n", "nzzzv", { desc = "下一个匹配并居中" })
 map("n", "N", "Nzzzv", { desc = "上一个匹配并居中" })
+
+-- Dashboard
+map("n", "<leader>.", function() Snacks.dashboard.open() end, { desc = "Dashboard" })
