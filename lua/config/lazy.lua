@@ -14,10 +14,13 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- Neovim bytecode cache: compiles Lua modules to .so-like cache files
+vim.loader.enable()
+
 require("lazy").setup({
   spec = {
     -- add LazyVim and import its plugins
-    { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+    { "LazyVim/LazyVim", import = "lazyvim.plugins", pin = true },
     -- LazyVim 官方语言扩展（必须在自定义 plugins 之前导入）
     -- 自动配置 LSP、格式化、Treesitter；Lua 已由 LazyVim 默认内置
     { import = "lazyvim.plugins.extras.lang.json" },
@@ -40,17 +43,21 @@ require("lazy").setup({
   },
   install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
-    enabled = true, -- check for plugin updates periodically
-    notify = false, -- notify on update
-  }, -- automatically check for plugin updates
+    enabled = false, -- manual check via :Lazy check
+  },
   performance = {
+    cache = {
+      enabled = true,
+      path = vim.fn.stdpath("cache") .. "/lazy/cache",
+    },
     rtp = {
       -- disable some rtp plugins
       disabled_plugins = {
         "gzip",
+        "netrwPlugin",
         -- "matchit",
         -- "matchparen",
-        -- "netrwPlugin",
+        "spellfile",
         "tarPlugin",
         "tohtml",
         "tutor",

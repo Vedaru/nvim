@@ -14,13 +14,13 @@ return {
       c.bg_sidebar = "#000000"
       c.bg_statusline = "#000000"
       c.bg_popup = "#000000"
-      -- 当前行高亮也用纯黑，去掉“淡一点的黑”横条
+      -- 当前行高亮也用纯黑，去掉"淡一点的黑"横条
       c.bg_highlight = "#000000"
     end,
     on_highlights = function(hl, c)
-      -- 分割线：亮蓝色 + 粗体
-      hl.WinSeparator = { fg = c.blue, bold = true }
-      hl.VertSplit = { fg = c.blue, bold = true }
+      -- 分割线：和 banner 同色 (#c2a86b)
+      hl.WinSeparator = { fg = "#c2a86b", bold = true }
+      hl.VertSplit = { fg = "#c2a86b", bold = true }
       -- 确保主要窗口/浮窗背景为纯黑
       hl.Normal = { bg = "#000000" }
       hl.NormalNC = { bg = "#000000" }

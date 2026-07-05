@@ -26,6 +26,15 @@ return {
     local e = vim.fn.fnameescape
     P._active_dir = nil
 
+    -- Auto-load last session on startup (disabled — use <leader>ql manually)
+    -- vim.api.nvim_create_autocmd("VimEnter", {
+    --   callback = function()
+    --     if vim.fn.argc() == 0 and next(vim.api.nvim_list_bufs()) == nil then
+    --       P.load({ last = true })
+    --     end
+    --   end,
+    -- })
+
     local function dirname(file)
       local d = vim.split(file:sub(#Config.options.dir + 1, -5), "%%", { plain = true })[1]
       d = d:gsub("%%", "/")

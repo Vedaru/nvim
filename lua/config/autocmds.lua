@@ -41,3 +41,19 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.expandtab = false
   end,
 })
+
+-- Tmux: fix rendering glitches when other panes are killed/resized
+vim.api.nvim_create_autocmd("VimResized", {
+  group = augroup("tmux_resize"),
+  pattern = "*",
+  command = "redraw!",
+})
+
+-- Markdown: 默认完全展开，不按标题折叠
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("markdown_unfold"),
+  pattern = "markdown",
+  callback = function()
+    vim.opt_local.foldlevel = 99
+  end,
+})
