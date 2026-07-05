@@ -3,7 +3,7 @@
 -- (after asking about unsaved changes) and restores the new session's state.
 return {
   "folke/persistence.nvim",
-  event = "BufReadPre",
+  event = "VeryLazy",
   keys = {
     { "<leader>qS", function()
         local dir = vim.fn.stdpath("state") .. "/sessions"

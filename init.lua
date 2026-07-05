@@ -1,21 +1,25 @@
+-- Check if a session exists for current dir
+local session_dir = vim.fn.stdpath("state") .. "/sessions"
+local cwd = vim.fn.getcwd()
+local session_name = cwd:gsub("[\\/:]+", "%%") .. ".vim"
+local has_session = vim.fn.filereadable(session_dir .. "/" .. session_name) == 1
+
 -- bootstrap lazy.nvim, LazyVim and your plugins
 require("config.lazy")
 
--- Restore last session on startup (must be in init.lua — VimEnter fires before VeryLazy)
+-- Restore session or show dashboard
 vim.api.nvim_create_autocmd("VimEnter", {
-  group = vim.api.nvim_create_augroup("restore_session", { clear = true }),
+  group = vim.api.nvim_create_augroup("startup", { clear = true }),
   nested = true,
   callback = function()
     if vim.fn.argc() ~= 0 then return end
-    local dir = vim.fn.stdpath("state") .. "/sessions"
-    local files = vim.fn.glob(dir .. "/*.vim", false, true)
-    if #files == 0 then return end
-    table.sort(files, function(a, b)
-      return vim.fn.getftime(a) > vim.fn.getftime(b)
+    vim.schedule(function()
+      if has_session then
+        local ok, P = pcall(require, "persistence")
+        if ok then P.load() end
+      else
+        Snacks.dashboard.open()
+      end
     end)
-    local latest = files[1]
-    if vim.fn.filereadable(latest) == 1 then
-      vim.cmd("silent! source " .. vim.fn.fnameescape(latest))
-    end
   end,
 })

@@ -44,9 +44,6 @@ opt.confirm = true -- 退出未保存时提示而非报错
 
 -- ── 外观细节 ──────────────────────────────────────────────────────
 opt.termguicolors = true
-opt.showcmd = true
-opt.showcmdloc = "statusline" -- gj/gk 常驻状态栏
-opt.cmdheight = 1 -- 底部留一行缓冲，防止 tmux 状态栏残影
 -- 仅追加 eob，保留 LazyVim 默认的 fold 图标（避免覆盖造成字符数错误）
 opt.fillchars:append({ eob = " " }) -- 隐藏行尾的 ~
 opt.list = true
