@@ -86,14 +86,17 @@ function M.build_conflict_list()
   return all_items, qf_items
 end
 
--- 清除插件自带的装饰器，防止 out of range 报错
-local function clear_plugin_decorations()
-  local ns = vim.api.nvim_get_namespaces()["git-conflict"]
-  if ns then
-    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_buf_is_loaded(bufnr) then
-        vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
-      end
+-- 调用插件官方刷新逻辑，确保高亮存在且行号正确
+local function refresh_plugin_ui()
+  local ok, gc = pcall(require, "git-conflict")
+  if not ok then
+    return
+  end
+
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(bufnr) then
+      -- 使用插件内部方法刷新指定 buffer
+      pcall(gc.refresh, bufnr)
     end
   end
 end
@@ -148,7 +151,7 @@ end
 
 -- 刷新所有数据
 function M.refresh(force_open)
-  clear_plugin_decorations() -- 刷新前清理，防止插件报错
+  refresh_plugin_ui() -- 调用插件 API 刷新 UI
   local _, qf_items = M.build_conflict_list()
   M.update_qf(qf_items, force_open)
 end
@@ -257,7 +260,6 @@ return {
       vim.api.nvim_create_autocmd("User", {
         pattern = "GitConflictResolved",
         callback = function()
-          -- 延迟刷新并捕获错误，防止插件原生装饰器报错影响体验
           vim.defer_fn(function()
             pcall(M.refresh, false)
           end, 100)
