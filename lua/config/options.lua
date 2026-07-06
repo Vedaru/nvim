@@ -49,6 +49,25 @@ opt.fillchars:append({ eob = " " }) -- 隐藏行尾的 ~
 opt.list = true
 opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 
+-- ── 剪贴板 ──────────────────────────────────────────────────────────
+-- WSL 下 xclip 读 Windows 富文本剪贴板会报 "target STRING not available"
+-- 用 Windows 原生工具替代，stable 且无格式转换问题
+vim.g.clipboard = {
+  name = "WSL-Clipboard",
+  copy = {
+    ["+"] = { "clip.exe" },
+    ["*"] = { "clip.exe" },
+  },
+  paste = {
+    ["+"] = { "powershell.exe", "-NoProfile", "-Command", "Get-Clipboard -Raw" },
+    ["*"] = { "powershell.exe", "-NoProfile", "-Command", "Get-Clipboard -Raw" },
+  },
+  cache_enabled = 1,
+}
+
+-- 默认 yank/delete/paste 使用系统剪贴板（"+ 寄存器）
+vim.o.clipboard = "unnamedplus"
+
 -- ── Session ────────────────────────────────────────────────────────
 -- 不保存 terminal buffer（恢复时是死的），保留 local options
 vim.opt.sessionoptions:remove("terminal")

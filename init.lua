@@ -12,11 +12,15 @@ vim.api.nvim_create_autocmd("VimEnter", {
   group = vim.api.nvim_create_augroup("startup", { clear = true }),
   nested = true,
   callback = function()
-    if vim.fn.argc() ~= 0 then return end
+    if vim.fn.argc() ~= 0 then
+      return
+    end
     vim.schedule(function()
       if has_session then
         local ok, P = pcall(require, "persistence")
-        if ok then P.load() end
+        if ok then
+          P.load()
+        end
       else
         Snacks.dashboard.open()
       end
