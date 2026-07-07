@@ -1,0 +1,58 @@
+-- ~/.config/nvim/lua/plugins/lsp.lua
+-- WAVE-cloud optimized: use lightest available LSPs
+return {
+  {
+    "neovim/nvim-lspconfig",
+    opts = {
+      diagnostics = {
+        underline = false,
+        virtual_text = false,
+      },
+      servers = {
+        -- Go-based TS server — no Node.js, no memory caps needed
+        tsgo = {
+          settings = {
+            typescript = {
+              inlayHints = {
+                enumMemberValues = { enabled = true },
+                functionLikeReturnTypes = { enabled = false },
+                parameterNames = { enabled = "literals" },
+                parameterTypes = { enabled = false },
+                propertyDeclarationTypes = { enabled = false },
+                variableTypes = { enabled = false },
+              },
+            },
+          },
+        },
+        -- Pyright: stripped down, only open files, no type-checking fluff
+        pyright = {
+          settings = {
+            python = {
+              analysis = {
+                diagnosticMode = "openFilesOnly",
+                typeCheckingMode = "basic",
+                autoSearchPaths = false,
+                useLibraryCodeForTypes = false,
+                autoImportCompletions = false,
+                reportMissingImports = false,
+                reportMissingTypeStubs = false,
+              },
+            },
+          },
+        },
+        -- Disable these — replaced by lighter alternatives or not needed
+        ts_ls = { enabled = false },
+        vtsls = { enabled = false },
+        marksman = { enabled = false },
+        tailwindcss = { enabled = false },
+      },
+    },
+  },
+  {
+    "mason-org/mason-lspconfig.nvim",
+    opts = {
+      automatic_installation = false,
+      ensure_installed = {},
+    },
+  },
+}
