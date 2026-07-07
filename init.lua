@@ -1,6 +1,9 @@
 -- Use Go-based tsgo LSP instead of Node-based tsserver (10x lighter)
 vim.g.lazyvim_ts_lsp = "tsgo"
 
+-- Suppress LazyVim import-order check (we use explicit imports, not the monolithic "lazyvim.plugins")
+vim.g.lazyvim_check_order = false
+
 -- Check if a session exists for current dir
 local session_dir = vim.fn.stdpath("state") .. "/sessions"
 local cwd = vim.fn.getcwd()

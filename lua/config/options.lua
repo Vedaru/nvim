@@ -39,7 +39,7 @@ opt.splitkeep = "screen" -- 分割时保持文本屏幕位置不跳动
 opt.undofile = true -- 持久化撤销历史
 opt.undolevels = 10000
 opt.updatetime = 200 -- 更快的 CursorHold / 交换文件写入
-opt.timeoutlen = 400 -- which-key 等映射等待时间
+opt.timeoutlen = 200 -- faster trigger for mini.clue / key sequences
 opt.confirm = true -- 退出未保存时提示而非报错
 
 -- ── 外观细节 ──────────────────────────────────────────────────────

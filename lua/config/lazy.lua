@@ -1,54 +1,48 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
-  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_echo({
-      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-      { out, "WarningMsg" },
-      { "\nPress any key to exit..." },
-    }, true, {})
-    vim.fn.getchar()
-    os.exit(1)
-  end
+  vim.api.nvim_echo({
+    { "lazy.nvim not found at: " .. lazypath, "ErrorMsg" },
+    { "\nRun install.sh first (zero-network restore from backup).", "WarningMsg" },
+  }, true, {})
+  os.exit(1)
 end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
   spec = {
-    -- add LazyVim and import its plugins
-    { "LazyVim/LazyVim", import = "lazyvim.plugins", opts = { news = { lazyvim = false, neovim = false } } },
-    -- import/override with your plugins
+    -- Only the 6 LazyVim spec files we actually use (shadowed by lua/lazyvim/plugins/*)
+    -- down from the original 50+. Formatting, linting, util, xtras, and 40 extras skipped.
+    { "LazyVim/LazyVim", import = "lazyvim.plugins.init" },
+    { "LazyVim/LazyVim", import = "lazyvim.plugins.ui" },
+    { "LazyVim/LazyVim", import = "lazyvim.plugins.editor" },
+    { "LazyVim/LazyVim", import = "lazyvim.plugins.colorscheme" },
+    { "LazyVim/LazyVim", import = "lazyvim.plugins.lsp" },
+
+    -- User plugin overrides
     { import = "plugins" },
   },
   defaults = {
-    -- By default, only LazyVim plugins will be lazy-loaded. Your custom plugins will load during startup.
-    -- If you know what you're doing, you can set this to `true` to have all your custom plugins lazy-loaded by default.
     lazy = false,
-    -- It's recommended to leave version=false for now, since a lot the plugin that support versioning,
-    -- have outdated releases, which may break your Neovim install.
-    version = false, -- always use the latest git commit
-    -- version = "*", -- try installing the latest stable version for plugins that support semver
+    version = false,
   },
   install = { colorscheme = { "tokyonight", "habamax" } },
-  checker = {
-    enabled = false, -- never check for updates
+
+  -- ZERO NETWORK: never check for updates, never auto-install, never auto-update lazy itself
+  checker = { enabled = false },
+  lockfile = vim.fn.stdpath("config") .. "/lazy-lock.json",
+  change_detection = { enabled = false },
+  pkg = { enabled = false },
+
+  -- Git settings: use HTTP (not SSH), never auto-fetch
+  git = {
+    timeout = 5,
+    log = { "-3" },
   },
-  lockfile = vim.fn.stdpath("config") .. "/lazy-lock.json", -- pin all plugins, never auto-update
-  change_detection = {
-    enabled = false, -- skip checking if plugins were modified
-  },
-  pkg = {
-    enabled = false, -- disable lazy.nvim's own auto-update
-  },
+
   performance = {
     rtp = {
-      -- disable some rtp plugins
       disabled_plugins = {
         "gzip",
-        -- "matchit",
-        -- "matchparen",
-        -- "netrwPlugin",
         "tarPlugin",
         "tohtml",
         "tutor",
