@@ -65,6 +65,10 @@ vim.g.clipboard = {
   cache_enabled = 1,
 }
 
+-- ── 代理（GFW 环境下 treesitter / mason 下载用）─────────────────────
+vim.env.https_proxy = "http://127.0.0.1:7897"
+vim.env.http_proxy = "http://127.0.0.1:7897"
+
 -- 默认 yank/delete/paste 使用系统剪贴板（"+ 寄存器）
 vim.o.clipboard = "unnamedplus"
 
