@@ -31,11 +31,10 @@ return {
       },
     })
 
-    -- 用 BufEnter + TermOpen 双重保障注册触发器。
-    -- FileType 对 terminal buffer（filetype 为空）不触发，
-    -- 所以改用 BufEnter：进入任何 buffer 都注册，保证 leader 瞬间弹出。
+    -- 用 TermOpen 补充（terminal buffer 无 FileType 事件）。
+    -- 不用 BufEnter——避免每次切 buffer 都调用，影响性能。
     local group = vim.api.nvim_create_augroup("miniclue_triggers", { clear = true })
-    vim.api.nvim_create_autocmd({ "BufEnter", "TermOpen" }, {
+    vim.api.nvim_create_autocmd("TermOpen", {
       group = group,
       callback = function(args)
         vim.schedule(function()

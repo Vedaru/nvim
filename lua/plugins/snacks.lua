@@ -39,6 +39,9 @@ return {
   ╚═══╝  ╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝
           ]],
         },
+        -- 不显示快捷选项、q 退出 nvim 等行为已在 snacks 源码里改好
+        -- (defaults.sections 去掉 keys 段、preset.keys 清空、D:init q -> :qa)，
+        -- build.sh 会把改过的 snacks.nvim 一起打包，重装不丢。
       },
       -- Disable auto_insert so terminal stays in normal mode after <Esc><Esc>,
       -- allowing which-key's <Space> trigger to work.
@@ -107,21 +110,6 @@ return {
         end,
         silent = true,
         desc = "Recent files",
-      },
-      -- Registered via lazy keys (available before VeryLazy); do not rely on config/keymaps.lua
-      {
-        "<leader>ft",
-        function()
-          Snacks.terminal.toggle(nil, { cwd = project_root(), interactive = false })
-        end,
-        desc = "Terminal (Root Dir)",
-      },
-      {
-        "<leader>fT",
-        function()
-          Snacks.terminal.toggle(nil, { interactive = false })
-        end,
-        desc = "Terminal (cwd)",
       },
       -- <leader>fF: 用 Everything (es.exe) 实时搜索【整台电脑】的文件名
       -- WSL 兼容：跳过 schtasks，直接启动 Everything.exe，并转换 Windows 路径为 /mnt/ 路径

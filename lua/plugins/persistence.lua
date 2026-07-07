@@ -98,7 +98,7 @@ return {
         require("mini.statusline").enable()
       end)
 
-      util.reset_line_numbers()
+      -- reset_line_numbers 由 SessionLoadPost autocmd 处理，这里不重复调用
 
       if vim.g.colors_name then
         vim.cmd.colorscheme(vim.g.colors_name)
@@ -240,9 +240,11 @@ return {
         local file = P.current()
         if vim.fn.filereadable(file) == 1 then
           P.load()
-        elseif Snacks and Snacks.dashboard then
-          Snacks.dashboard.open()
         end
+        -- 无 session 时不再调用 Snacks.dashboard.open()：
+        -- snacks 自己的 M.setup 已在 UIEnter 时开过 dashboard（普通窗口），
+        -- 这里再 open 会创建第二个浮窗 dashboard，导致 :q 需要按两次
+        -- （第一次只关浮窗，普通窗口的 dashboard 还在）。
       end)
     end
   end,

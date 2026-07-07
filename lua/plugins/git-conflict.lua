@@ -36,7 +36,7 @@ function M.build_conflict_list()
   local qf_items = {}
   local qf_files = {}
 
-  local handle = io.popen("git diff --name-only --diff-filter=U 2>/dev/null")
+  local handle = io.popen(vim.o.shell:find("cmd") and "git diff --name-only --diff-filter=U 2>nul" or "git diff --name-only --diff-filter=U 2>/dev/null")
   if not handle then
     return all_items, qf_items, qf_files
   end
@@ -266,11 +266,13 @@ return {
         end,
       })
 
-      -- 2. 保存后刷新
+      -- 2. 保存后刷新（仅 git 仓库）
       vim.api.nvim_create_autocmd("BufWritePost", {
         group = vim.api.nvim_create_augroup("GitConflictRefresh", { clear = true }),
         callback = function()
-          pcall(M.refresh, false)
+          if vim.fn.finddir(".git", ".;") ~= "" then
+            pcall(M.refresh, false)
+          end
         end,
       })
 

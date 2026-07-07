@@ -51,3 +51,12 @@ require("lazy").setup({
     },
   },
 })
+
+-- 从代码层面删除 Lazy 面板中不需要的命令（零网络模式下无意义）
+-- 配合 lazy.nvim 源码补丁（view/init.lua setup_patterns 的 nil 保护），
+-- 重装时由 build.sh 把改过的 lazy.nvim 一起打包，所以无需在 Lua 层兜底。
+local ViewConfig = require("lazy.view.config")
+local removed = { "install", "update", "sync", "clean", "check", "log", "restore", "debug", "reload" }
+for _, name in ipairs(removed) do
+  ViewConfig.commands[name] = nil
+end

@@ -16,11 +16,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
     enabled[key] = true
 
     -- 让所有可打印字符触发补全
-    local chars = {}
-    for i = 32, 126 do
-      table.insert(chars, string.char(i))
+    if client.server_capabilities.completionProvider then
+      local chars = {}
+      for i = 32, 126 do
+        table.insert(chars, string.char(i))
+      end
+      client.server_capabilities.completionProvider.triggerCharacters = chars
     end
-    client.server_capabilities.completionProvider.triggerCharacters = chars
 
     vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
 

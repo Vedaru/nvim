@@ -9,10 +9,4 @@ vim.g.lazyvim_news = false
 -- bootstrap lazy.nvim, LazyVim and your plugins
 require("config.lazy")
 
--- Load keymaps on VeryLazy (Snacks global is available by then)
-vim.api.nvim_create_autocmd("User", {
-  pattern = "VeryLazy",
-  callback = function()
-    pcall(require, "config.keymaps")
-  end,
-})
+-- keymaps 由 LazyVim 自动从 lua/config/keymaps.lua 加载，无需手动注册
