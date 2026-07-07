@@ -58,6 +58,13 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+vim.api.nvim_create_autocmd("SessionLoadPost", {
+  group = augroup("session_line_numbers"),
+  callback = function()
+    require("config.session").reset_line_numbers()
+  end,
+})
+
 -- mini.files / oil.nvim: detach LSP from file-browser buffers
 -- to prevent "mingled text" warnings and treesitter errors
 vim.api.nvim_create_autocmd("FileType", {

@@ -47,6 +47,7 @@ return {
       -- whose return value is ignored without it.
       -- auto_close=false: suppress "Terminal exited" notification on session switch
       terminal = {
+        enabled = true,
         auto_insert = false,
         auto_close = false,
         win = {
@@ -106,6 +107,21 @@ return {
         end,
         silent = true,
         desc = "Recent files",
+      },
+      -- Registered via lazy keys (available before VeryLazy); do not rely on config/keymaps.lua
+      {
+        "<leader>ft",
+        function()
+          Snacks.terminal.toggle(nil, { cwd = project_root(), interactive = false })
+        end,
+        desc = "Terminal (Root Dir)",
+      },
+      {
+        "<leader>fT",
+        function()
+          Snacks.terminal.toggle(nil, { interactive = false })
+        end,
+        desc = "Terminal (cwd)",
       },
       -- <leader>fF: 用 Everything (es.exe) 实时搜索【整台电脑】的文件名
       -- WSL 兼容：跳过 schtasks，直接启动 Everything.exe，并转换 Windows 路径为 /mnt/ 路径

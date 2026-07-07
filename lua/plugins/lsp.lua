@@ -39,12 +39,20 @@ return {
             },
           },
         },
-        -- Ruff: skip non-file buffers (oil://, term://) that crash ruff
+        -- Ruff: skip non-file buffers (oil://, term://) without killing the whole client
         ruff = {
+          root_dir = function(fname)
+            if fname == "" or vim.startswith(fname, "oil://") or vim.startswith(fname, "term://") then
+              return nil
+            end
+            return vim.fs.root(fname, { "pyproject.toml", "ruff.toml", ".git" })
+          end,
           on_attach = function(client, bufnr)
             local path = vim.api.nvim_buf_get_name(bufnr)
             if path == "" or vim.startswith(path, "oil://") or vim.startswith(path, "term://") then
-              client.stop()
+              vim.schedule(function()
+                pcall(vim.lsp.buf_detach_client, bufnr, client.id)
+              end)
             end
           end,
         },

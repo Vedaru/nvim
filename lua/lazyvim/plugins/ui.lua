@@ -28,7 +28,7 @@ return {
       notifier = { enabled = true },
       scope = { enabled = true },
       scroll = { enabled = true },
-      statuscolumn = { enabled = false }, -- we set this in options.lua
+      statuscolumn = { enabled = true },
       toggle = { map = LazyVim.safe_keymap_set },
       words = { enabled = true },
     },

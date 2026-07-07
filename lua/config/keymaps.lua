@@ -1,5 +1,6 @@
 -- Keymaps loaded on VeryLazy (replaces LazyVim's lazyvim.config.keymaps dependency)
 -- Uses plain vim.keymap.set — no LazyVim.safe_keymap_set, no Snacks.keymap.set indirection
+-- mapleader is set by lazyvim.config.options (Space), loaded before this file
 
 local map = vim.keymap.set
 
@@ -73,6 +74,44 @@ map("n", "<leader>qq", "<cmd>qa<cr>", { desc = "Quit All" })
 map("n", "<leader>-", "<C-W>s", { desc = "Split Window Below" })
 map("n", "<leader>|", "<C-W>v", { desc = "Split Window Right" })
 map("n", "<leader>wd", "<C-W>c", { desc = "Delete Window" })
+
+-- ── window move (leader + w + H/J/K/L) ───────────────────────────
+map("n", "<leader>wH", "<C-W>H", { desc = "Move Window Left" })
+map("n", "<leader>wJ", "<C-W>J", { desc = "Move Window Down" })
+map("n", "<leader>wK", "<C-W>K", { desc = "Move Window Up" })
+map("n", "<leader>wL", "<C-W>L", { desc = "Move Window Right" })
+
+-- ── terminal ──────────────────────────────────────────────────────
+local function open_terminal(cwd)
+  local ok, err = pcall(function()
+    Snacks.terminal.toggle(nil, {
+      cwd = cwd,
+      interactive = false,
+    })
+  end)
+  if not ok then
+    vim.notify("Terminal: " .. tostring(err), vim.log.levels.ERROR)
+  end
+end
+
+map("n", "<leader>ft", function()
+  local ok, P = pcall(require, "persistence")
+  local cwd = ok and P._active_dir or nil
+  cwd = cwd or vim.fn.getcwd()
+  if cwd == "" then
+    cwd = vim.fn.expand("~")
+  end
+  open_terminal(cwd)
+end, { desc = "Terminal (Root Dir)" })
+map("n", "<leader>fT", function()
+  open_terminal(vim.fn.getcwd())
+end, { desc = "Terminal (cwd)" })
+map({ "n", "t" }, "<c-/>", function()
+  open_terminal(vim.fn.getcwd())
+end, { desc = "Terminal (cwd)" })
+
+-- 终端 insert 模式下用 <C-\><C-n> 退回 normal 模式
+map("t", "<C-\\><C-n>", "<C-\\><C-n>", { desc = "Terminal Normal Mode" })
 
 -- ── undo break-points in insert mode ──────────────────────────────
 map("i", ",", ",<c-g>u")

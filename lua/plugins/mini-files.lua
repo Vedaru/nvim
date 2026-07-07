@@ -31,11 +31,15 @@ return {
       if ok and P._active_dir then
         root = P._active_dir
       end
+      -- Fallback to $HOME if cwd is empty (e.g. dashboard with broken cwd)
+      if root == "" then root = vim.fn.expand("~") end
       MiniFiles.open(root)
     end, { desc = "Toggle file browser (project root)" })
 
     vim.keymap.set("n", "<leader>E", function()
-      MiniFiles.open(vim.fn.getcwd())
+      local cwd = vim.fn.getcwd()
+      if cwd == "" then cwd = vim.fn.expand("~") end
+      MiniFiles.open(cwd)
     end, { desc = "File browser (cwd)" })
   end,
 }

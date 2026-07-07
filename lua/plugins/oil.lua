@@ -29,14 +29,15 @@ return {
           local name = dir:gsub("[\\/:]+", "%%")
           local file = Config.options.dir .. name .. ".vim"
 
-          -- Always overwrite: blank session is just a cd command.
-          vim.fn.writefile({ "cd " .. dir }, file)
+          -- Blank session: cd + empty buffer so restore never leaves a black screen.
+          vim.fn.writefile({ "cd " .. vim.fn.fnameescape(dir), "enew" }, file)
           oil.close()
           P.switch(file)
         end,
       },
       ["<CR>"] = function()
         local oil = require("oil")
+        local util = require("config.session")
         local entry = oil.get_cursor_entry()
 
         if not entry or not entry.name or entry.type == "directory" then
@@ -46,11 +47,7 @@ return {
         end
 
         local dir = oil.get_current_dir()
-        -- Check if we're in the sessions directory
-        local sessions_dir = vim.fn.stdpath("state") .. "/sessions"
-        local norm_dir = dir:gsub("\\", "/")
-        local norm_sessions = sessions_dir:gsub("\\", "/")
-        if vim.startswith(norm_dir, norm_sessions) and entry.name:match("%.vim$") then
+        if util.is_sessions_dir(dir) and entry.name:match("%.vim$") then
           local full_path = dir .. entry.name
           oil.close()
           require("persistence").switch(full_path)

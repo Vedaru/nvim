@@ -16,6 +16,9 @@ opt.cursorline = true -- 高亮当前行
 opt.wrap = false -- 默认不折行
 opt.linebreak = true -- 折行时按单词边界断行
 opt.signcolumn = "yes" -- 始终显示左侧符号列，避免抖动
+opt.number = true -- 当前行显示绝对行号
+opt.relativenumber = true -- 其他行显示相对行号
+opt.statuscolumn = [[%!v:lua.LazyVim.statuscolumn()]]
 opt.virtualedit = "block" -- 块选择可超出行尾
 
 -- ── 缩进 ──────────────────────────────────────────────────────────
@@ -39,7 +42,8 @@ opt.splitkeep = "screen" -- 分割时保持文本屏幕位置不跳动
 opt.undofile = true -- 持久化撤销历史
 opt.undolevels = 10000
 opt.updatetime = 200 -- 更快的 CursorHold / 交换文件写入
-opt.timeoutlen = 200 -- faster trigger for mini.clue / key sequences
+opt.swapfile = false -- 避免 session 恢复时 W325（多实例/残留 swapfile）；撤销由 undofile 负责
+opt.timeoutlen = 500 -- leader 序列等待时间，terminal 里需要更长
 opt.confirm = true -- 退出未保存时提示而非报错
 
 -- ── 外观细节 ──────────────────────────────────────────────────────
@@ -73,6 +77,8 @@ vim.env.http_proxy = "http://127.0.0.1:7897"
 vim.o.clipboard = "unnamedplus"
 
 -- ── Session ────────────────────────────────────────────────────────
--- 不保存 terminal buffer（恢复时是死的），保留 local options
+-- 不保存 terminal buffer（恢复时是死的）
+-- 不保存 global/local options — 避免 session 覆盖 colorscheme、行号、fold 等
 vim.opt.sessionoptions:remove("terminal")
-vim.opt.sessionoptions:append("localoptions")
+vim.opt.sessionoptions:remove("options")
+vim.opt.sessionoptions:remove("localoptions")

@@ -1,6 +1,5 @@
 -- Override persistence.nvim: project-aware sessions with isolation.
--- Each session owns its buffers/windows. Switching sessions closes old buffers
--- (after asking about unsaved changes) and restores the new session's state.
+-- Session files live in stdpath("state")/sessions/.
 return {
   "folke/persistence.nvim",
   event = "VeryLazy",
@@ -8,7 +7,7 @@ return {
     {
       "<leader>qS",
       function()
-        local dir = vim.fn.stdpath("state") .. "/sessions"
+        local dir = require("persistence").session_dir()
         vim.cmd("Oil " .. vim.fn.fnameescape(dir))
       end,
       desc = "Manage Sessions (Oil)",
@@ -44,38 +43,75 @@ return {
       desc = "Quit Without Saving Session",
     },
   },
-  opts = {
-    dir = vim.fn.stdpath("state") .. "/sessions/",
-    need = 1,
-    branch = false,
-  },
+  opts = function()
+    return {
+      dir = require("config.session").session_dir(),
+      need = 1,
+      branch = false,
+    }
+  end,
   config = function(_, opts)
+    local util = require("config.session")
     require("persistence").setup(opts)
     local P = require("persistence")
     local Config = require("persistence.config")
     local e = vim.fn.fnameescape
     P._active_dir = nil
-
-    -- Auto-load last session on startup (disabled — use <leader>ql manually)
-    -- vim.api.nvim_create_autocmd("VimEnter", {
-    --   callback = function()
-    --     if vim.fn.argc() == 0 and next(vim.api.nvim_list_bufs()) == nil then
-    --       P.load({ last = true })
-    --     end
-    --   end,
-    -- })
+    P.session_dir = util.session_dir
 
     local function dirname(file)
-      local d = vim.split(file:sub(#Config.options.dir + 1, -5), "%%", { plain = true })[1]
-      d = d:gsub("%%", "/")
-      if jit and jit.os:find("Windows") then
-        d = d:gsub("^(%w)/", "%1:/")
+      return util.decode_session_path(file)
+    end
+
+    local function ensure_layout()
+      vim.o.winheight = 1
+      vim.o.winwidth = 20
+      vim.o.winminheight = 0
+      vim.o.winminwidth = 0
+      vim.o.laststatus = 3
+
+      if #vim.api.nvim_list_wins() == 0 then
+        vim.cmd("enew")
       end
-      return d
+
+      local cur_name = vim.api.nvim_buf_get_name(0)
+      if cur_name == "" or vim.fn.filereadable(cur_name) == 0 then
+        if not util.show_best_buffer() and P._active_dir then
+          util.open_project_fallback(P._active_dir)
+        end
+      end
+
+      if vim.bo.buftype == "terminal" then
+        if P._active_dir then
+          util.open_project_fallback(P._active_dir)
+        else
+          vim.cmd("enew")
+        end
+      end
+
+      local name = vim.api.nvim_buf_get_name(0)
+      if name ~= "" and vim.fn.filereadable(name) == 1 then
+        pcall(vim.cmd, "doautocmd FileType")
+      end
+
+      pcall(function()
+        require("mini.statusline").enable()
+      end)
+
+      util.reset_line_numbers()
+
+      if vim.g.colors_name then
+        vim.cmd.colorscheme(vim.g.colors_name)
+      end
+
+      vim.cmd("wincmd =")
+      vim.cmd("redraw!")
+      vim.cmd("redrawstatus!")
     end
 
     function P.switch(file)
       if not file or vim.fn.filereadable(file) == 0 then
+        vim.notify("Session not found: " .. tostring(file), vim.log.levels.ERROR)
         return
       end
       local unsaved = {}
@@ -99,11 +135,29 @@ return {
           return
         end
       end
-      vim.cmd("silent! %bdelete!")
+
       P._active_dir = dirname(file)
+
+      -- Close all floating windows (oil, snacks, etc.) so session's `silent only`
+      -- doesn't fail with E5601 "Cannot close window, only floating window would remain".
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        if vim.api.nvim_win_is_valid(win) then
+          local cfg = vim.api.nvim_win_get_config(win)
+          if cfg and cfg.relative and cfg.relative ~= "" then
+            pcall(vim.api.nvim_win_close, win, true)
+          end
+        end
+      end
+
+      vim.cmd("silent! tabonly")
+      vim.cmd("silent! %bdelete!")
       P.fire("LoadPre")
-      vim.cmd("silent! source " .. e(file))
+      local ok, err = pcall(vim.cmd, "source " .. e(file))
       P.fire("LoadPost")
+      if not ok then
+        vim.notify("Session source failed: " .. tostring(err), vim.log.levels.ERROR)
+      end
+      ensure_layout()
     end
 
     P.current = function(opts_arg)
@@ -130,7 +184,18 @@ return {
       end
       if not P._active_dir then
         return
-      end -- only save when a session is loaded
+      end
+      local has_file = false
+      for _, b in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.bo[b].buflisted and vim.api.nvim_buf_get_name(b) ~= "" then
+          has_file = true
+          break
+        end
+      end
+      if not has_file then
+        vim.notify("Session not saved: no file buffers open", vim.log.levels.WARN)
+        return
+      end
       vim.cmd("mks! " .. e(P.current(save_opts)))
     end
 
@@ -139,6 +204,10 @@ return {
       local file = load_opts.last and P.last() or P.current()
       if vim.fn.filereadable(file) == 0 then
         file = P.current({ branch = false })
+      end
+      if vim.fn.filereadable(file) == 0 then
+        vim.notify("No session file for this directory", vim.log.levels.WARN)
+        return
       end
       P.switch(file)
     end
@@ -162,6 +231,17 @@ return {
       }, function(item)
         if item then
           P.switch(item.session)
+        end
+      end)
+    end
+
+    if vim.fn.argc() == 0 then
+      vim.schedule(function()
+        local file = P.current()
+        if vim.fn.filereadable(file) == 1 then
+          P.load()
+        elseif Snacks and Snacks.dashboard then
+          Snacks.dashboard.open()
         end
       end)
     end

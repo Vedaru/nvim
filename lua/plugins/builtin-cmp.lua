@@ -1,5 +1,6 @@
 -- Neovim 0.12 内置 LSP 补全 — 用 autocmd 确保触发
 local group = vim.api.nvim_create_augroup("BuiltinCmp", { clear = true })
+local enabled = {}
 
 vim.api.nvim_create_autocmd("LspAttach", {
   group = group,
@@ -8,6 +9,11 @@ vim.api.nvim_create_autocmd("LspAttach", {
     if not client or not client:supports_method("textDocument/completion") then
       return
     end
+    local key = client.id .. ":" .. args.buf
+    if enabled[key] then
+      return
+    end
+    enabled[key] = true
 
     -- 让所有可打印字符触发补全
     local chars = {}
@@ -17,8 +23,6 @@ vim.api.nvim_create_autocmd("LspAttach", {
     client.server_capabilities.completionProvider.triggerCharacters = chars
 
     vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
-
-    vim.notify("LSP completion ON: " .. client.name, vim.log.levels.INFO)
 
     vim.keymap.set("i", "<Tab>", function()
       if vim.fn.complete_info({ "selected" }).selected ~= -1 then
