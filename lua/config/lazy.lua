@@ -17,7 +17,7 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   spec = {
     -- add LazyVim and import its plugins
-    { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+    { "LazyVim/LazyVim", import = "lazyvim.plugins", opts = { news = { lazyvim = false, neovim = false } } },
     -- import/override with your plugins
     { import = "plugins" },
   },
@@ -32,7 +32,14 @@ require("lazy").setup({
   },
   install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
-    enabled = false,
+    enabled = false, -- never check for updates
+  },
+  lockfile = vim.fn.stdpath("config") .. "/lazy-lock.json", -- pin all plugins, never auto-update
+  change_detection = {
+    enabled = false, -- skip checking if plugins were modified
+  },
+  pkg = {
+    enabled = false, -- disable lazy.nvim's own auto-update
   },
   performance = {
     rtp = {

@@ -1,5 +1,4 @@
 -- ~/.config/nvim/lua/plugins/lsp.lua
--- WAVE-cloud optimized: use lightest available LSPs
 return {
   {
     "neovim/nvim-lspconfig",
@@ -49,7 +48,6 @@ return {
             end
           end,
         },
-        -- Disable these — replaced by lighter alternatives or not needed
         ts_ls = { enabled = false },
         vtsls = { enabled = false },
         marksman = { enabled = false },

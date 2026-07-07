@@ -57,3 +57,18 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.foldlevel = 99
   end,
 })
+
+-- mini.files / oil.nvim: detach LSP from file-browser buffers
+-- to prevent "mingled text" warnings and treesitter errors
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("lsp_detach"),
+  pattern = { "minifiles", "oil" },
+  callback = function(event)
+    vim.schedule(function()
+      local clients = vim.lsp.get_clients({ bufnr = event.buf })
+      for _, client in ipairs(clients) do
+        client.stop()
+      end
+    end)
+  end,
+})
