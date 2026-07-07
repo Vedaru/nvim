@@ -40,6 +40,15 @@ return {
             },
           },
         },
+        -- Ruff: skip non-file buffers (oil://, term://) that crash ruff
+        ruff = {
+          on_attach = function(client, bufnr)
+            local path = vim.api.nvim_buf_get_name(bufnr)
+            if path == "" or vim.startswith(path, "oil://") or vim.startswith(path, "term://") then
+              client.stop()
+            end
+          end,
+        },
         -- Disable these — replaced by lighter alternatives or not needed
         ts_ls = { enabled = false },
         vtsls = { enabled = false },

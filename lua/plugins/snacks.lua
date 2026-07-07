@@ -14,9 +14,7 @@ return {
     "folke/snacks.nvim",
     opts = {
       explorer = {
-        hidden = true,
-        ignored = true,
-        follow = false, -- pin at git root; never chase buffers
+        enabled = false,
       },
       picker = {
         hidden = true,
@@ -62,29 +60,6 @@ return {
       },
     },
     keys = {
-      -- <leader>e: toggle explorer at project root
-      {
-        "<leader>e",
-        function()
-          for _, win in ipairs(vim.api.nvim_list_wins()) do
-            if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "snacks_explorer" then
-              return vim.api.nvim_win_close(win, true)
-            end
-          end
-          Snacks.explorer.open({ cwd = project_root() })
-        end,
-        desc = "Toggle Explorer",
-      },
-      -- <leader>E: open explorer at CWD (fallback)
-      {
-        "<leader>E",
-        function()
-          Snacks.explorer.open({
-            cwd = vim.fn.getcwd(),
-          })
-        end,
-        desc = "Explorer (cwd)",
-      },
       -- 查找类：基于 snacks.picker，统一使用 project_root()
       {
         "<leader>gd",
