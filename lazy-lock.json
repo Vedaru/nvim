@@ -7,10 +7,6 @@
     "branch": "main",
     "commit": "78336bc89ee5365633bcf754d93df01678b5c08f"
   },
-  "catppuccin": {
-    "branch": "main",
-    "commit": "e068ab5f8261f23f6f71ffd8791ae40315b77b9c"
-  },
   "conform.nvim": {
     "branch": "master",
     "commit": "619363c30309d29ffa631e67c8183f2a72caa373"
@@ -126,9 +122,5 @@
   "ts-comments.nvim": {
     "branch": "main",
     "commit": "a59d6092213447450191122c9346f309161504cb"
-  },
-  "which-key.nvim": {
-    "branch": "main",
-    "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a"
   }
 }
