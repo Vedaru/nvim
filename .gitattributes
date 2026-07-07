@@ -1,1 +1,2 @@
+scripts/plugins-backup.tar.gz filter=lfs diff=lfs merge=lfs -text
 scripts/plugins-backup.tar.gz !text !filter !merge !diff
