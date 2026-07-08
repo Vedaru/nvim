@@ -26,13 +26,7 @@ return {
       if MiniFiles.close() then
         return
       end
-      local root = vim.fn.getcwd()
-      local ok, P = pcall(require, "persistence")
-      if ok and P._active_dir then
-        root = P._active_dir
-      end
-      -- Fallback to $HOME if cwd is empty (e.g. dashboard with broken cwd)
-      if root == "" then root = vim.fn.expand("~") end
+      local root = require("config.session").project_root()
       MiniFiles.open(root)
     end, { desc = "Toggle file browser (project root)" })
 

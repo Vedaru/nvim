@@ -1,5 +1,33 @@
 local M = {}
 
+--- Session dir > git root (from buffer/cwd) > cwd > $HOME
+function M.project_root()
+  local ok, P = pcall(require, "persistence")
+  if ok and P._active_dir and vim.fn.isdirectory(P._active_dir) == 1 then
+    return P._active_dir
+  end
+
+  local buf = vim.api.nvim_buf_get_name(0)
+  if vim.bo.buftype == "" and buf ~= "" then
+    local root = vim.fs.root(buf, { ".git" })
+    if root then
+      return root
+    end
+    return vim.fn.fnamemodify(buf, ":h")
+  end
+
+  local cwd = vim.fn.getcwd()
+  if cwd ~= "" then
+    local root = vim.fs.root(cwd, { ".git" })
+    if root then
+      return root
+    end
+    return cwd
+  end
+
+  return vim.fn.expand("~")
+end
+
 function M.session_dir()
   return vim.fn.stdpath("state") .. "/sessions/"
 end

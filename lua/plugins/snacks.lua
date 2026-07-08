@@ -1,12 +1,6 @@
 -- ~/.config/nvim/lua/plugins/snacks.lua
 local project_root = function()
-  local ok, P = pcall(require, "persistence")
-  if ok and P._active_dir then return P._active_dir end
-  local buf = vim.api.nvim_buf_get_name(0)
-  if vim.bo[0].buftype == "" and buf ~= "" then
-    return vim.fs.root(buf, ".git") or vim.fn.fnamemodify(buf, ":h")
-  end
-  return vim.fn.getcwd()
+  return require("config.session").project_root()
 end
 
 return {

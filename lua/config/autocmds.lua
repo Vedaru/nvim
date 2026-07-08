@@ -97,3 +97,29 @@ vim.api.nvim_create_autocmd("FileType", {
 -- dashboard 的快捷选项删除 + q -> :qa 也都已下沉到 snacks 源码
 -- (defaults.sections 去掉 keys 段、preset.keys 清空、D:init q 改 :qa)，
 -- 这里不再需要任何 config 层 workaround。
+
+-- snacks picker 预览切到真实 buffer 后 Alt-w 会丢，用 buffer-local 补回 cycle_win
+local function snacks_picker_preview_cycle_win(buf)
+  for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+    win = tonumber(win) --[[@as number?]]
+    if win and vim.api.nvim_win_is_valid(win) and vim.w[win].snacks_picker_preview then
+      vim.keymap.set({ "n", "i", "v" }, "<A-w>", function()
+        local pickers = Snacks and Snacks.picker and Snacks.picker.get({ tab = true })
+        local picker = pickers and pickers[1]
+        if picker then
+          require("snacks.picker.actions").cycle_win(picker)
+        end
+      end, { buffer = buf, nowait = true, silent = true, desc = "Picker: cycle window" })
+      return
+    end
+  end
+end
+
+vim.api.nvim_create_autocmd("BufWinEnter", {
+  group = augroup("snacks_picker_preview"),
+  callback = function(ev)
+    vim.schedule(function()
+      snacks_picker_preview_cycle_win(ev.buf)
+    end)
+  end,
+})
