@@ -43,7 +43,7 @@ opt.undofile = true -- 持久化撤销历史
 opt.undolevels = 10000
 opt.updatetime = 200 -- 更快的 CursorHold / 交换文件写入
 opt.swapfile = false -- 避免 session 恢复时 W325（多实例/残留 swapfile）；撤销由 undofile 负责
-opt.timeoutlen = 500 -- leader 序列等待时间，terminal 里需要更长
+opt.timeoutlen = 300 -- mini.clue 接管 leader 等待；300ms 足够连按，也避免 trigger 失效时卡 500ms
 opt.confirm = true -- 退出未保存时提示而非报错
 
 -- ── 外观细节 ──────────────────────────────────────────────────────
@@ -75,6 +75,22 @@ vim.env.http_proxy = "http://127.0.0.1:7897"
 
 -- 默认 yank/delete/paste 使用系统剪贴板（"+ 寄存器）
 vim.o.clipboard = "unnamedplus"
+
+-- ── gx / vim.ui.open：WSL 下用 Windows 默认程序打开 ──────────────────────
+-- 默认走 xdg-open，WSL 里不可用，会导致 gx 报错：
+--   vim.ui.open: command failed (2): { "xdg-open", ... }
+-- Neovim 0.10+ 的 gx handler 会对返回值调用 :wait()，所以必须用
+-- vim.system 返回 SystemObj（vim.fn.jobstart 返回数字会触发
+-- "attempt to index a number value"）
+vim.ui.open = function(uri)
+  local cmd
+  if vim.fn.executable("wslview") == 1 then
+    cmd = { "wslview", uri }
+  else
+    cmd = { "powershell.exe", "-NoProfile", "-Command", "Start-Process", uri }
+  end
+  return vim.system(cmd, { text = true })
+end
 
 -- ── Session ────────────────────────────────────────────────────────
 -- 不保存 terminal buffer（恢复时是死的）

@@ -1,3 +1,7 @@
+-- mapleader 必须在 mini.clue 注册 trigger 之前就位（lazy 加载插件前设好）
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
 -- Use Go-based tsgo LSP instead of Node-based tsserver (10x lighter)
 vim.g.lazyvim_ts_lsp = "tsgo"
 
