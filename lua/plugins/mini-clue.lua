@@ -22,6 +22,11 @@ return {
       miniclue.gen_clues.builtin_completion(),
       miniclue.gen_clues.marks(),
       miniclue.gen_clues.windows(),
+      -- Git conflict resolution (press . then o/t/b/0)
+      { mode = "n", keys = ".o", desc = "Choose Ours" },
+      { mode = "n", keys = ".t", desc = "Choose Theirs" },
+      { mode = "n", keys = ".b", desc = "Choose Both" },
+      { mode = "n", keys = ".0", desc = "Choose None" },
     }
 
     miniclue.setup({
@@ -33,6 +38,7 @@ return {
         { mode = "n", keys = "z" },
         { mode = "n", keys = "[" },
         { mode = "n", keys = "]" },
+        { mode = "n", keys = "." },
       },
       clues = static_clues,
       window = {
