@@ -42,6 +42,10 @@ return {
         -- Ruff: skip non-file buffers (oil://, term://) without killing the whole client
         ruff = {
           root_dir = function(fname)
+            -- fname can be a string (filename) or a number (bufnr)
+            if type(fname) ~= "string" then
+              fname = vim.api.nvim_buf_get_name(fname)
+            end
             if fname == "" or vim.startswith(fname, "oil://") or vim.startswith(fname, "term://") then
               return nil
             end
