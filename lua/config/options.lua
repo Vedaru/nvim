@@ -63,8 +63,8 @@ vim.g.clipboard = {
     ["*"] = { "clip.exe" },
   },
   paste = {
-    ["+"] = { "powershell.exe", "-NoProfile", "-Command", "Get-Clipboard -Raw" },
-    ["*"] = { "powershell.exe", "-NoProfile", "-Command", "Get-Clipboard -Raw" },
+    ["+"] = { "sh", "-c", "powershell.exe -NoProfile -Command 'Get-Clipboard -Raw' | tr -d '\r'" },
+    ["*"] = { "sh", "-c", "powershell.exe -NoProfile -Command 'Get-Clipboard -Raw' | tr -d '\r'" },
   },
   cache_enabled = 1,
 }

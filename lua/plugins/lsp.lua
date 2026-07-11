@@ -8,21 +8,10 @@ return {
         virtual_text = false,
       },
       servers = {
-        -- Go-based TS server — no Node.js, no memory caps needed
-        tsgo = {
-          settings = {
-            typescript = {
-              inlayHints = {
-                enumMemberValues = { enabled = true },
-                functionLikeReturnTypes = { enabled = false },
-                parameterNames = { enabled = "literals" },
-                parameterTypes = { enabled = false },
-                propertyDeclarationTypes = { enabled = false },
-                variableTypes = { enabled = false },
-              },
-            },
-          },
-        },
+        -- Biome: Rust-based, does format + lint only (no completions / no type-checking)
+        -- Must have a biome.json (even empty '{}') in project root to start.
+        biome = {},
+        tsgo = { enabled = false },
         -- Pyright: stripped down, only open files, no type-checking fluff
         pyright = {
           settings = {
@@ -42,7 +31,6 @@ return {
         -- Ruff: skip non-file buffers (oil://, term://) without killing the whole client
         ruff = {
           root_dir = function(fname)
-            -- fname can be a string (filename) or a number (bufnr)
             if type(fname) ~= "string" then
               fname = vim.api.nvim_buf_get_name(fname)
             end

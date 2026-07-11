@@ -2,9 +2,7 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Use Go-based tsgo LSP instead of Node-based tsserver (10x lighter)
-vim.g.lazyvim_ts_lsp = "tsgo"
-
+-- No TypeScript LSP — Biome handles format + lint only
 -- Suppress LazyVim import-order check (we use explicit imports, not the monolithic "lazyvim.plugins")
 vim.g.lazyvim_check_order = false
 -- 关闭 LazyVim 启动欢迎 / news 弹窗
