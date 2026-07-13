@@ -8,6 +8,15 @@ return {
     style = "night",
     transparent = true, -- tokyonight 原生透明，自动处理 Normal/SignColumn/Float 等
     on_highlights = function(hl, c)
+      -- 所有窗口背景完全透明，继承终端半透明
+      hl.Normal = { bg = "NONE" }
+      hl.NormalNC = { bg = "NONE" }
+      hl.NormalFloat = { bg = "NONE" }
+      hl.FloatBorder = { bg = "NONE" }
+      hl.LineNr = { bg = "NONE" }
+      hl.SignColumn = { bg = "NONE" }
+      hl.FoldColumn = { bg = "NONE" }
+      hl.CursorLine = { bg = "NONE" }
       -- 分割线颜色
       hl.WinSeparator = { fg = "#c2a86b", bold = true }
       hl.VertSplit = { fg = "#c2a86b", bold = true }
