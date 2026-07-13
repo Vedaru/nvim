@@ -13,21 +13,6 @@ return {
         biome = {},
         tsgo = { enabled = false },
         -- Pyright: stripped down, only open files, no type-checking fluff
-        pyright = {
-          settings = {
-            python = {
-              analysis = {
-                diagnosticMode = "openFilesOnly",
-                typeCheckingMode = "basic",
-                autoSearchPaths = false,
-                useLibraryCodeForTypes = false,
-                autoImportCompletions = false,
-                reportMissingImports = false,
-                reportMissingTypeStubs = false,
-              },
-            },
-          },
-        },
         -- Ruff: skip non-file buffers (oil://, term://) without killing the whole client
         ruff = {
           root_dir = function(fname)
