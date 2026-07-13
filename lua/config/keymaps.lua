@@ -42,9 +42,24 @@ map("n", "[b", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
 map("n", "]b", "<cmd>bnext<cr>", { desc = "Next Buffer" })
 map("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
 map("n", "<leader>`", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
-map("n", "<leader>bd", function() Snacks.bufdelete() end, { desc = "Delete Buffer" })
-map("n", "<leader>bo", function() Snacks.bufdelete.other() end, { desc = "Delete Other Buffers" })
-map("n", "<leader>bi", function() Snacks.bufdelete.invisible() end, { desc = "Delete Invisible Buffers" })
+map("n", "<leader>bd", function()
+  local ok = pcall(Snacks.bufdelete)
+  if not ok then
+    vim.cmd("bdelete!")
+  end
+end, { desc = "Delete Buffer" })
+map("n", "<leader>bo", function()
+  local ok = pcall(Snacks.bufdelete.other)
+  if not ok then
+    vim.cmd("bdelete!")
+  end
+end, { desc = "Delete Other Buffers" })
+map("n", "<leader>bi", function()
+  local ok = pcall(Snacks.bufdelete.invisible)
+  if not ok then
+    vim.cmd("bdelete!")
+  end
+end, { desc = "Delete Invisible Buffers" })
 map("n", "<leader>bD", "<cmd>:bd<cr>", { desc = "Delete Buffer and Window" })
 
 -- ── save / search / indent ────────────────────────────────────────
