@@ -1,12 +1,10 @@
--- mini.files: lightweight file explorer replacement for snacks.explorer
--- Loads eagerly (not lazy) so keymaps beat LazyVim's default <leader>e
+-- ~/.config/nvim/lua/plugins/mini-files.lua
 return {
   "nvim-mini/mini.files",
   version = false,
   lazy = false,
   keys = {
     { "<leader>e", desc = "Toggle file browser (project root)" },
-    { "<leader>E", desc = "File browser (cwd)" },
   },
   opts = {
     windows = {
@@ -22,18 +20,43 @@ return {
     local MiniFiles = require("mini.files")
     MiniFiles.setup(opts)
 
-    vim.keymap.set("n", "<leader>e", function()
-      if MiniFiles.close() then
-        return
-      end
-      local root = require("config.session").project_root()
-      MiniFiles.open(root)
-    end, { desc = "Toggle file browser (project root)" })
+    local chroot = nil
 
-    vim.keymap.set("n", "<leader>E", function()
-      local cwd = vim.fn.getcwd()
-      if cwd == "" then cwd = vim.fn.expand("~") end
-      MiniFiles.open(cwd)
-    end, { desc = "File browser (cwd)" })
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "MiniFilesBufferCreate",
+      callback = function(args)
+        local buf = args.data.buf_id
+        if not chroot then return end
+        local function block_go_out()
+          local cur = vim.api.nvim_buf_get_name(buf)
+          cur = cur:gsub("^minifiles://", "")
+          if cur:gsub("/+$", "") == chroot:gsub("/+$", "") then
+            vim.notify("At project root", vim.log.levels.WARN, { title = "mini.files" })
+            return true
+          end
+          return false
+        end
+        vim.keymap.set("n", "-", function()
+          if not block_go_out() then MiniFiles.go_out() end
+        end, { buffer = buf })
+        vim.keymap.set("n", "h", function()
+          if not block_go_out() then MiniFiles.go_out() end
+        end, { buffer = buf })
+      end,
+    })
+
+    vim.keymap.set("n", "<leader>e", function()
+      if MiniFiles.close() then return end
+      local ok, P = pcall(require, "persistence")
+      if ok and P._active_dir and vim.fn.isdirectory(P._active_dir) == 1 then
+        chroot = P._active_dir
+      else
+        local fname = vim.api.nvim_buf_get_name(0)
+        chroot = (fname ~= "" and vim.bo.buftype == "")
+            and vim.fn.fnamemodify(fname, ":h")
+            or vim.fn.getcwd()
+      end
+      MiniFiles.open(chroot)
+    end, { desc = "Toggle file browser (project root)" })
   end,
 }
