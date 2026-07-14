@@ -4,9 +4,9 @@
 
 local map = vim.keymap.set
 
--- ── <leader><leader> 绑成 <Nop>，防止快速连击 Space 退化成默认「光标右移」 ──
--- 单按 Space 仍由 mini.clue 的 nowait buffer-local trigger 立即捕获（出面板）；
--- 只有连击第 2 个 Space 才走这条 <Nop>，光标不动。
+-- Prevent rapid double-Space from moving cursor right
+-- Single Space = leader; double Space = no-op
+-- 
 map("n", "<leader><leader>", "<Nop>", { desc = "No-op (prevent cursor-right on rapid Space)" })
 
 -- ── better up/down (gj/gk for wrapped lines) ──────────────────────
@@ -138,7 +138,7 @@ map("i", ",", ",<c-g>u")
 map("i", ".", ".<c-g>u")
 map("i", ";", ";<c-g>u")
 
--- ── gx: 缩短 mini.clue 面板里的描述 ───────────────────────────────
+-- gx: shorten description in which-key
 -- Neovim 内置 gx 的 desc 来自二进制内嵌的 vim._defaults（sid=-8），改磁盘
 -- 源码或清 luac 缓存都没用。这里保留原 callback，只覆盖 desc。
 local gx = vim.fn.maparg("gx", "n", 0, 1)
@@ -146,12 +146,6 @@ if gx and gx.callback then
   map("n", "gx", gx.callback, { desc = "Open url" })
 end
 
--- mini.clue trigger 必须在所有 <leader> 映射之后注册，否则单按 Space 会等 timeoutlen
-local function refresh_miniclue_triggers()
-  pcall(function()
-    require("mini.clue").ensure_buf_triggers()
-  end)
-end
-refresh_miniclue_triggers()
-vim.schedule(refresh_miniclue_triggers)
-vim.defer_fn(refresh_miniclue_triggers, 100)
+
+-- Browse keymaps with Snacks picker
+map("n", "<leader>?", function() Snacks.picker.keymaps() end, { desc = "Browse keymaps" })

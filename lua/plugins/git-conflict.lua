@@ -30,24 +30,60 @@ local function get_lines(filepath)
   return lines
 end
 
+-- 快速扫描单个文件是否包含冲突标记
+local function has_conflict_markers(abs_path)
+  local f = io.open(abs_path, "r")
+  if not f then return false end
+  for line in f:lines() do
+    if line:match("^<<<<<<< ") then
+      f:close()
+      return true
+    end
+  end
+  f:close()
+  return false
+end
+
 -- 核心：扫描所有冲突文件，构建全局冲突点列表
 function M.build_conflict_list()
   local all_items = {}
   local qf_items = {}
   local qf_files = {}
 
-  local handle = io.popen(vim.o.shell:find("cmd") and "git diff --name-only --diff-filter=U 2>nul" or "git diff --name-only --diff-filter=U 2>/dev/null")
-  if not handle then
-    return all_items, qf_items, qf_files
+  local seen = {}
+  local conflict_files = {}
+
+  -- 1. git unmerged files (--diff-filter=U)
+  local handle = io.popen(
+    vim.o.shell:find("cmd") and "git diff --name-only --diff-filter=U 2>nul"
+    or "git diff --name-only --diff-filter=U 2>/dev/null"
+  )
+  if handle then
+    for line in handle:lines() do
+      if line ~= "" then
+        table.insert(conflict_files, line)
+        seen[line] = true
+      end
+    end
+    handle:close()
   end
 
-  local conflict_files = {}
-  for line in handle:lines() do
-    if line ~= "" then
-      table.insert(conflict_files, line)
+  -- 2. fallback: scan all tracked files for raw <<<<<<< markers
+  if #conflict_files == 0 then
+    local handle2 = io.popen("git ls-files 2>/dev/null")
+    if handle2 then
+      for file in handle2:lines() do
+        if file ~= "" and not seen[file] then
+          local abs = vim.fn.fnamemodify(file, ":p")
+          if has_conflict_markers(abs) then
+            table.insert(conflict_files, file)
+            seen[file] = true
+          end
+        end
+      end
+      handle2:close()
     end
   end
-  handle:close()
 
   table.sort(conflict_files)
 
@@ -95,7 +131,6 @@ local function refresh_plugin_ui()
 
   for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_loaded(bufnr) then
-      -- 使用插件内部方法刷新指定 buffer
       pcall(gc.refresh, bufnr)
     end
   end
@@ -151,7 +186,7 @@ end
 
 -- 刷新所有数据
 function M.refresh(force_open)
-  refresh_plugin_ui() -- 调用插件 API 刷新 UI
+  refresh_plugin_ui()
   local _, qf_items = M.build_conflict_list()
   M.update_qf(qf_items, force_open)
 end
@@ -244,10 +279,10 @@ return {
         end,
         desc = "Previous Conflict (Global)",
       },
-      { ".o", function() require("git-conflict").choose("ours") end, desc = "Choose Ours" },
+      { ".o", function() require("git-conflict").choose("ours") end,   desc = "Choose Ours" },
       { ".t", function() require("git-conflict").choose("theirs") end, desc = "Choose Theirs" },
-      { ".b", function() require("git-conflict").choose("both") end, desc = "Choose Both" },
-      { ".0", function() require("git-conflict").choose("none") end, desc = "Choose None" },
+      { ".b", function() require("git-conflict").choose("both") end,   desc = "Choose Both" },
+      { ".0", function() require("git-conflict").choose("none") end,   desc = "Choose None" },
     },
     opts = {
       list_opener = nil,
