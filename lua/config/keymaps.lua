@@ -4,10 +4,7 @@
 
 local map = vim.keymap.set
 
--- Prevent rapid double-Space from moving cursor right
--- Single Space = leader; double Space = no-op
--- 
-map("n", "<leader><leader>", "<Nop>", { desc = "No-op (prevent cursor-right on rapid Space)" })
+map({ "n", "v" }, "<Space>", "<Nop>", { silent = true, desc = "Prevent cursor-right on lone Space" })
 
 -- ── better up/down (gj/gk for wrapped lines) ──────────────────────
 map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
