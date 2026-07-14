@@ -4,24 +4,27 @@
 
 local map = vim.keymap.set
 
--- <leader> prefix: instant resolution
--- Single Space consumed instantly (nowait) so leader sequences like <Space>qS
--- resolve immediately — no timeoutlen delay, no accidental macro recording.
-map("n", "<Space>", "<Nop>", { nowait = true, desc = "Leader prefix" })
--- Double Space still a no-op, just without the delay penalty.
-map("n", "<Space><Space>", "<Nop>", { desc = "No-op (double space)" })
-
--- better up/down (gj/gk for wrapped lines)
-map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
-map({ "n", "x" }, "<Down>", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
-map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
-map({ "n", "x" }, "<Up>", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
+-- <leader> prefix: make the raw <Space> key itself a no-op.
+-- By default, Normal-mode <Space> is equivalent to `l` (cursor right).
+-- Since <Space> is also our <leader>, if Neovim ever falls through to the
+-- "default" behavior (e.g. timeout expires with no matching longer mapping,
+-- or you press <leader> then an undefined key), it would move the cursor
+-- right instead of doing nothing. Mapping <Space> to <Nop> here prevents that.
+-- This does NOT interfere with <leader>xx style mappings — Vim always tries
+-- to resolve the longest matching mapping first.
+map({ "n", "x" }, "<Space>", "<Nop>", { desc = "Leader key (no-op)", silent = true })
 
 -- window navigation
 map("n", "<C-h>", "<C-w>h", { desc = "Go to Left Window" })
 map("n", "<C-j>", "<C-w>j", { desc = "Go to Lower Window" })
 map("n", "<C-k>", "<C-w>k", { desc = "Go to Upper Window" })
 map("n", "<C-l>", "<C-w>l", { desc = "Go to Right Window" })
+
+-- better up/down (gj/gk for wrapped lines)
+map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
+map({ "n", "x" }, "<Down>", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
+map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
+map({ "n", "x" }, "<Up>", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
 
 -- window resize
 map("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
