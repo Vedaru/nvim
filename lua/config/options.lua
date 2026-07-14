@@ -43,7 +43,7 @@ opt.undofile = true -- 持久化撤销历史
 opt.undolevels = 10000
 opt.updatetime = 200 -- 更快的 CursorHold / 交换文件写入
 opt.swapfile = false -- 避免 session 恢复时 W325（多实例/残留 swapfile）；撤销由 undofile 负责
--- timeoutlen left at vim default (1000ms) for comfortable leader sequences
+opt.timeoutlen = 0 -- no timeout on key sequences
 opt.confirm = true -- 退出未保存时提示而非报错
 
 -- ── 外观细节 ──────────────────────────────────────────────────────
