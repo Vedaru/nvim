@@ -35,7 +35,7 @@ map("n", "<A-k>", "<cmd>execute 'move .-' . (v:count1 + 1)<cr>==", { desc = "Mov
 map("i", "<A-j>", "<esc><cmd>m .+1<cr>==gi", { desc = "Move Down" })
 map("i", "<A-k>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move Up" })
 map("v", "<A-j>", ":<C-u>execute \"'<,'>move '>+\" . v:count1<cr>gv=gv", { desc = "Move Down" })
-map("v", "<A-k>", ":<C-u>execute \"'<,'>move '<-" . (v:count1 + 1)<cr>gv=gv", { desc = "Move Up" })
+map("v", "<A-k>", ":<C-u>execute \"'<,'>move '<-\" . (v:count1 + 1)<cr>gv=gv", { desc = "Move Up" })
 
 -- buffers
 map("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
@@ -132,8 +132,8 @@ map({ "n", "t" }, "<c-/>", function()
   open_terminal(vim.fn.getcwd())
 end, { desc = "Terminal (cwd)" })
 
--- terminal insert: use <C-\><C-n> to return to normal mode
-map("t", "<C-\><C-n>", "<C-\><C-n>", { desc = "Terminal Normal Mode" })
+-- terminal insert: use <C-\\><C-n> to return to normal mode
+map("t", "<C-\\><C-n>", "<C-\\><C-n>", { desc = "Terminal Normal Mode" })
 
 -- undo break-points in insert mode
 map("i", ",", ",<c-g>u")
