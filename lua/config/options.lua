@@ -43,7 +43,7 @@ opt.undofile = true -- 持久化撤销历史
 opt.undolevels = 10000
 opt.updatetime = 200 -- 更快的 CursorHold / 交换文件写入
 opt.swapfile = false -- 避免 session 恢复时 W325（多实例/残留 swapfile）；撤销由 undofile 负责
-opt.timeoutlen = 300 -- mini.clue 接管 leader 等待；300ms 足够连按，也避免 trigger 失效时卡 500ms
+opt.timeoutlen = 300 -- leader key timeout
 opt.confirm = true -- 退出未保存时提示而非报错
 
 -- ── 外观细节 ──────────────────────────────────────────────────────

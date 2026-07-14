@@ -1,4 +1,4 @@
--- mapleader 必须在 mini.clue 注册 trigger 之前就位（lazy 加载插件前设好）
+-- mapleader must be set before lazy loads plugins
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
