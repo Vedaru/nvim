@@ -105,3 +105,8 @@ end
 vim.opt.sessionoptions:remove("terminal")
 vim.opt.sessionoptions:remove("options")
 vim.opt.sessionoptions:remove("localoptions")
+
+-- ── Tags ──────────────────────────────────────────────────────────
+-- followscs: respects ignorecase + smartcase for tag matching
+-- prevents "Session" from matching "session" (smartcase kicks in for uppercase)
+vim.opt.tagcase = "followscs"
