@@ -43,7 +43,14 @@ opt.undofile = true -- 持久化撤销历史
 opt.undolevels = 10000
 opt.updatetime = 200 -- 更快的 CursorHold / 交换文件写入
 opt.swapfile = false -- 避免 session 恢复时 W325（多实例/残留 swapfile）；撤销由 undofile 负责
-opt.timeoutlen = 300 -- mini.clue 接管 leader 等待；300ms 足够连按，也避免 trigger 失效时卡 500ms
+
+-- 按键序列超时设置：
+-- 注意 timeoutlen 表示“等待组合键补全的最长毫秒数”，不是“无超时”的意思。
+-- 之前误设为 0，导致按下 <leader>（Space）后 Vim 立即判定序列结束，
+-- 来不及等待后续按键，从而直接 fallback 成 <Space> 的默认行为（光标右移）。
+-- 这里改为 timeout = false：无限等待，直到组合键序列完整或按 <Esc> 取消。
+opt.timeout = false
+
 opt.confirm = true -- 退出未保存时提示而非报错
 
 -- ── 外观细节 ──────────────────────────────────────────────────────
@@ -98,3 +105,8 @@ end
 vim.opt.sessionoptions:remove("terminal")
 vim.opt.sessionoptions:remove("options")
 vim.opt.sessionoptions:remove("localoptions")
+
+-- ── Tags ──────────────────────────────────────────────────────────
+-- followscs: respects ignorecase + smartcase for tag matching
+-- prevents "Session" from matching "session" (smartcase kicks in for uppercase)
+vim.opt.tagcase = "followscs"

@@ -29,7 +29,9 @@ return {
     {
       "<leader>qw",
       function()
-        require("persistence").save()
+local P = require("persistence")
+        P._explicit_save = true
+        P.save()
         vim.notify("Session saved", vim.log.levels.INFO)
       end,
       desc = "Save Current Session",
@@ -185,6 +187,9 @@ return {
       if not P._active_dir then
         return
       end
+local session_file = P.current(save_opts)
+      if not P._explicit_save and vim.fn.filereadable(session_file) == 0 then return end
+      P._explicit_save = false
       local has_file = false
       for _, b in ipairs(vim.api.nvim_list_bufs()) do
         if vim.bo[b].buflisted and vim.api.nvim_buf_get_name(b) ~= "" then
@@ -196,7 +201,7 @@ return {
         vim.notify("Session not saved: no file buffers open", vim.log.levels.WARN)
         return
       end
-      vim.cmd("mks! " .. e(P.current(save_opts)))
+      vim.cmd("mks! " .. e(session_file))
     end
 
     P.load = function(load_opts)

@@ -4,30 +4,35 @@
 
 local map = vim.keymap.set
 
--- ── <leader><leader> 绑成 <Nop>，防止快速连击 Space 退化成默认「光标右移」 ──
--- 单按 Space 仍由 mini.clue 的 nowait buffer-local trigger 立即捕获（出面板）；
--- 只有连击第 2 个 Space 才走这条 <Nop>，光标不动。
-map("n", "<leader><leader>", "<Nop>", { desc = "No-op (prevent cursor-right on rapid Space)" })
+-- <leader> prefix: make the raw <Space> key itself a no-op.
+-- By default, Normal-mode <Space> is equivalent to `l` (cursor right).
+-- Since <Space> is also our <leader>, if Neovim ever falls through to the
+-- "default" behavior (e.g. timeout expires with no matching longer mapping,
+-- or you press <leader> then an undefined key), it would move the cursor
+-- right instead of doing nothing. Mapping <Space> to <Nop> here prevents that.
+-- This does NOT interfere with <leader>xx style mappings — Vim always tries
+-- to resolve the longest matching mapping first.
+map({ "n", "x" }, "<Space>", "<Nop>", { desc = "Leader key (no-op)", silent = true })
 
--- ── better up/down (gj/gk for wrapped lines) ──────────────────────
+-- window navigation (normal + terminal mode)
+map({ "n", "t" }, "<C-h>", "<cmd>wincmd h<cr>", { desc = "Go to Left Window" })
+map({ "n", "t" }, "<C-j>", "<cmd>wincmd j<cr>", { desc = "Go to Lower Window" })
+map({ "n", "t" }, "<C-k>", "<cmd>wincmd k<cr>", { desc = "Go to Upper Window" })
+map({ "n", "t" }, "<C-l>", "<cmd>wincmd l<cr>", { desc = "Go to Right Window" })
+
+-- better up/down (gj/gk for wrapped lines)
 map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
 map({ "n", "x" }, "<Down>", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
 map({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
 map({ "n", "x" }, "<Up>", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
 
--- ── window navigation ─────────────────────────────────────────────
-map("n", "<C-h>", "<C-w>h", { desc = "Go to Left Window" })
-map("n", "<C-j>", "<C-w>j", { desc = "Go to Lower Window" })
-map("n", "<C-k>", "<C-w>k", { desc = "Go to Upper Window" })
-map("n", "<C-l>", "<C-w>l", { desc = "Go to Right Window" })
-
--- ── window resize ─────────────────────────────────────────────────
+-- window resize
 map("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase Window Height" })
 map("n", "<C-Down>", "<cmd>resize -2<cr>", { desc = "Decrease Window Height" })
 map("n", "<C-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease Window Width" })
 map("n", "<C-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase Window Width" })
 
--- ── move lines ────────────────────────────────────────────────────
+-- move lines
 map("n", "<A-j>", "<cmd>execute 'move .+' . v:count1<cr>==", { desc = "Move Down" })
 map("n", "<A-k>", "<cmd>execute 'move .-' . (v:count1 + 1)<cr>==", { desc = "Move Up" })
 map("i", "<A-j>", "<esc><cmd>m .+1<cr>==gi", { desc = "Move Down" })
@@ -35,7 +40,7 @@ map("i", "<A-k>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move Up" })
 map("v", "<A-j>", ":<C-u>execute \"'<,'>move '>+\" . v:count1<cr>gv=gv", { desc = "Move Down" })
 map("v", "<A-k>", ":<C-u>execute \"'<,'>move '<-\" . (v:count1 + 1)<cr>gv=gv", { desc = "Move Up" })
 
--- ── buffers ───────────────────────────────────────────────────────
+-- buffers
 map("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
 map("n", "<S-l>", "<cmd>bnext<cr>", { desc = "Next Buffer" })
 map("n", "[b", "<cmd>bprevious<cr>", { desc = "Prev Buffer" })
@@ -62,12 +67,12 @@ map("n", "<leader>bi", function()
 end, { desc = "Delete Invisible Buffers" })
 map("n", "<leader>bD", "<cmd>:bd<cr>", { desc = "Delete Buffer and Window" })
 
--- ── save / search / indent ────────────────────────────────────────
+-- save / search / indent
 map({ "i", "x", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save File" })
 map("x", "<", "<gv")
 map("x", ">", ">gv")
 
--- ── diagnostics ───────────────────────────────────────────────────
+-- diagnostics
 local function diagnostic_goto(next, severity)
   return function()
     vim.diagnostic.jump({
@@ -85,23 +90,24 @@ map("n", "[e", diagnostic_goto(false, "ERROR"), { desc = "Prev Error" })
 map("n", "]w", diagnostic_goto(true, "WARN"), { desc = "Next Warning" })
 map("n", "[w", diagnostic_goto(false, "WARN"), { desc = "Prev Warning" })
 
--- ── misc ──────────────────────────────────────────────────────────
-map({"n", "x"}, "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next Search Result" })
-map({"n", "x"}, "N", "'nN'[v:searchforward].'zv'", { expr = true, desc = "Prev Search Result" })
-map("n", "<leader>ur", "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>", { desc = "Redraw / Clear hlsearch / Diff Update" })
+-- misc
+map({ "n", "x" }, "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next Search Result" })
+map({ "n", "x" }, "N", "'nN'[v:searchforward].'zv'", { expr = true, desc = "Prev Search Result" })
+map("n", "<leader>ur", "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>",
+  { desc = "Redraw / Clear hlsearch / Diff Update" })
 map("n", "<leader>fn", "<cmd>enew<cr>", { desc = "New File" })
 map("n", "<leader>qq", "<cmd>qa<cr>", { desc = "Quit All" })
 map("n", "<leader>-", "<C-W>s", { desc = "Split Window Below" })
 map("n", "<leader>|", "<C-W>v", { desc = "Split Window Right" })
 map("n", "<leader>wd", "<C-W>c", { desc = "Delete Window" })
 
--- ── window move (leader + w + H/J/K/L) ───────────────────────────
+-- window move (leader + w + H/J/K/L)
 map("n", "<leader>wH", "<C-W>H", { desc = "Move Window Left" })
 map("n", "<leader>wJ", "<C-W>J", { desc = "Move Window Down" })
 map("n", "<leader>wK", "<C-W>K", { desc = "Move Window Up" })
 map("n", "<leader>wL", "<C-W>L", { desc = "Move Window Right" })
 
--- ── terminal ──────────────────────────────────────────────────────
+-- terminal
 local function open_terminal(cwd)
   local ok, err = pcall(function()
     Snacks.terminal.toggle(nil, {
@@ -130,28 +136,20 @@ map({ "n", "t" }, "<c-/>", function()
   open_terminal(vim.fn.getcwd())
 end, { desc = "Terminal (cwd)" })
 
--- 终端 insert 模式下用 <C-\><C-n> 退回 normal 模式
+-- terminal insert: use <C-\><C-n> to return to normal mode
 map("t", "<C-\\><C-n>", "<C-\\><C-n>", { desc = "Terminal Normal Mode" })
 
--- ── undo break-points in insert mode ──────────────────────────────
+-- undo break-points in insert mode
 map("i", ",", ",<c-g>u")
 map("i", ".", ".<c-g>u")
 map("i", ";", ";<c-g>u")
 
--- ── gx: 缩短 mini.clue 面板里的描述 ───────────────────────────────
--- Neovim 内置 gx 的 desc 来自二进制内嵌的 vim._defaults（sid=-8），改磁盘
--- 源码或清 luac 缓存都没用。这里保留原 callback，只覆盖 desc。
+-- gx: open URL
 local gx = vim.fn.maparg("gx", "n", 0, 1)
 if gx and gx.callback then
   map("n", "gx", gx.callback, { desc = "Open url" })
 end
 
--- mini.clue trigger 必须在所有 <leader> 映射之后注册，否则单按 Space 会等 timeoutlen
-local function refresh_miniclue_triggers()
-  pcall(function()
-    require("mini.clue").ensure_buf_triggers()
-  end)
-end
-refresh_miniclue_triggers()
-vim.schedule(refresh_miniclue_triggers)
-vim.defer_fn(refresh_miniclue_triggers, 100)
+-- Browse keymaps with Snacks picker
+map("n", "<leader>?", function() Snacks.picker.keymaps() end, { desc = "Browse keymaps" })
+
