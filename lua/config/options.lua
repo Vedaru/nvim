@@ -105,3 +105,23 @@ end
 vim.opt.sessionoptions:remove("terminal")
 vim.opt.sessionoptions:remove("options")
 vim.opt.sessionoptions:remove("localoptions")
+----------------------------------------
+-- gutentags: universal-ctags goto-def
+----------------------------------------
+vim.g.gutentags_ctags_executable = vim.fn.expand("~/.local/bin/ctags")
+vim.g.gutentags_project_root = { ".git", ".hg", ".svn" }
+vim.g.gutentags_ctags_tagfile = ".tags"
+vim.g.gutentags_exclude_filetypes = {
+  "gitcommit", "gitrebase", "help", "markdown",
+  "text", "startify", "fugitive", "fugitiveblame",
+}
+vim.g.gutentags_generate_on_new = true
+vim.g.gutentags_generate_on_missing = true
+vim.g.gutentags_generate_on_write = true
+vim.g.gutentags_generate_on_empty_buffer = false
+vim.g.gutentags_cache_dir = vim.fn.expand("~/.cache/gutentags")
+vim.g.gutentags_ctags_extra_args = {
+  "--fields=+lnS",
+  "--extras=+q",
+  "--output-format=e-ctags",
+}
