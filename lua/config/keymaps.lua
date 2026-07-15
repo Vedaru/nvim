@@ -152,3 +152,7 @@ end
 
 -- Browse keymaps with Snacks picker
 map("n", "<leader>?", function() Snacks.picker.keymaps() end, { desc = "Browse keymaps" })
+
+-- tags: goto-definition (Neovim built-in)
+map("n", "gd", "<C-]>", { desc = "Go to Definition" })
+map("n", "gb", "<C-t>", { desc = "Go Back" })
