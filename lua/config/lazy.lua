@@ -16,7 +16,6 @@ require("lazy").setup({
     { "LazyVim/LazyVim", import = "lazyvim.plugins.ui" },
     { "LazyVim/LazyVim", import = "lazyvim.plugins.editor" },
     { "LazyVim/LazyVim", import = "lazyvim.plugins.colorscheme" },
-    { "LazyVim/LazyVim", import = "lazyvim.plugins.lsp" },
 
     -- User plugin overrides
     { import = "plugins" },

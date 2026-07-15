@@ -6,6 +6,7 @@ return {
     priority = 500,
     init = function()
       local cache = vim.fn.stdpath("cache") .. "/gutentags"
+      vim.fn.mkdir(cache, "p")
 
       vim.g.gutentags_ctags_executable = vim.fn.expand("~/.local/bin/ctags")
       vim.g.gutentags_cache_dir = cache
@@ -34,6 +35,9 @@ return {
         "--extras=+q",
         "--output-format=e-ctags",
       }
+
+      -- Prevent tags for $HOME (noise from ~/.git, dotfile repos)
+      vim.g.gutentags_project_root_blacklist = { vim.fn.expand("~") }
 
       vim.opt.tags:prepend(cache .. "/*")
     end,
