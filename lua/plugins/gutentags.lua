@@ -7,15 +7,8 @@ return {
     init = function()
       local cache = vim.fn.stdpath("cache") .. "/gutentags"
       vim.fn.mkdir(cache, "p")
-      
-      -- Ensure ctags is executable; default to 'ctags' if the specific path doesn't exist
-      local ctags_path = vim.fn.expand("~/.local/bin/ctags")
-      if vim.fn.executable(ctags_path) == 1 then
-        vim.g.gutentags_ctags_executable = ctags_path
-      else
-        vim.g.gutentags_ctags_executable = "ctags"
-      end
 
+      vim.g.gutentags_ctags_executable = vim.fn.expand("~/.local/bin/ctags")
       vim.g.gutentags_cache_dir = cache
       vim.g.gutentags_ctags_tagfile = ".tags"
 
@@ -38,52 +31,84 @@ return {
         return ""
       end
 
-      -- Define the Vimscript wrapper for the Lua root finder
       vim.cmd([[
         function! GutentagsRootFinder(path)
           return luaeval('_G._gutentags_find_root(_A)', a:path)
         endfunction
       ]])
-      
+
       vim.g.gutentags_project_root_finder = "GutentagsRootFinder"
+
+      -- Cleanup stale tag files on startup
+      local function cleanup_stale_tags()
+        local sessions = vim.fn.stdpath("state") .. "/sessions/"
+        for _, tagfile in ipairs(vim.fn.glob(cache .. "/*.tags", false, true)) do
+          local cwd = nil
+          local f = io.open(tagfile, "r")
+          if f then
+            for line in f:lines() do
+              if line:match("^!_TAG_PROC_CWD	") then
+                cwd = line:match("^!_TAG_PROC_CWD	(.+)	")
+                break
+              end
+              if not line:match("^!") then break end
+            end
+            f:close()
+          end
+          if not cwd or vim.fn.isdirectory(cwd) == 0 then
+            -- Directory gone or unreadable
+            os.remove(tagfile)
+            os.remove(tagfile:gsub("%.tags$", ".tags.files"))
+            os.remove(tagfile:gsub("%.tags$", ".tags.lock"))
+          else
+            local has_git = vim.fn.isdirectory(cwd .. "/.git") == 1
+            local encoded = cwd:gsub("/", "%%")
+            local has_session = vim.fn.filereadable(sessions .. encoded .. ".vim") == 1
+            if not has_git and not has_session then
+              os.remove(tagfile)
+              os.remove(tagfile:gsub("%.tags$", ".tags.files"))
+              os.remove(tagfile:gsub("%.tags$", ".tags.lock"))
+            end
+          end
+        end
+      end
+
+      vim.api.nvim_create_autocmd("VimEnter", {
+        callback = cleanup_stale_tags,
+        once = true,
+      })
+
       vim.g.gutentags_generate_on_new = true
       vim.g.gutentags_generate_on_missing = true
       vim.g.gutentags_generate_on_write = true
       vim.g.gutentags_generate_on_empty_buffer = false
+
       vim.g.gutentags_file_list_command = "rg --files"
-      
       vim.g.gutentags_ctags_exclude = {
         "node_modules", ".git", "dist", "build", "target",
         ".next", ".nuxt", "coverage", "__pycache__",
         "*.min.js", "*.min.css", "*.lock", "*.lockb",
       }
-      
+
       vim.g.gutentags_exclude_filetypes = {
         "gitcommit", "gitrebase", "help", "markdown",
         "text", "startify", "fugitive", "fugitiveblame",
       }
-      
+
       vim.g.gutentags_ctags_extra_args = {
         "--fields=+lnS",
         "--extras=+q",
         "--output-format=e-ctags",
         "--languages=-CSS,-JSON,-Markdown,-YAML,-HTML,-XML",
       }
-      
+
       vim.g.gutentags_project_root_blacklist = { vim.fn.expand("~") }
-      
-      -- FIX: Use a specific glob to only match .tags files
-      -- Using '/*' was causing Neovim to try reading .lock and .files as tags, failing the jump.
-      vim.opt.tags:prepend(cache .. "/*.tags")
+
+      vim.opt.tags:prepend(cache .. "/*")
     end,
     config = function()
-      -- Source the plugin if it's not automatically handled by your packpath
-      local plugin_path = vim.fn.stdpath("data") .. "/site/pack/plugins/start/vim-gutentags/plugin/gutentags.vim"
-      if vim.fn.filereadable(plugin_path) == 1 then
-        vim.cmd("source " .. plugin_path)
-      end
+      vim.cmd("source " .. vim.fn.stdpath("data")
+        .. "/site/pack/plugins/start/vim-gutentags/plugin/gutentags.vim")
     end,
   },
 }
-
-
