@@ -11,25 +11,7 @@ return {
       vim.g.gutentags_ctags_executable = vim.fn.expand("~/.local/bin/ctags")
       vim.g.gutentags_cache_dir = cache
       vim.g.gutentags_ctags_tagfile = ".tags"
-
-      -- Custom root finder: .git OR existing session file
-      vim.g.gutentags_project_root_finder = function(path)
-        local sessions = vim.fn.stdpath("state") .. "/sessions/"
-        local cur = vim.fn.fnamemodify(path, ":p:h")
-        local prev = ""
-        while cur ~= prev and cur ~= "/" do
-          if vim.fn.isdirectory(cur .. "/.git") == 1 then
-            return cur
-          end
-          local encoded = cur:gsub("/", "%%") .. ".vim"
-          if vim.fn.filereadable(sessions .. encoded) == 1 then
-            return cur
-          end
-          prev = cur
-          cur = vim.fn.fnamemodify(cur, ":h")
-        end
-        return nil
-      end
+      vim.g.gutentags_project_root = { ".git", ".gutentags" }
 
       vim.g.gutentags_generate_on_new = true
       vim.g.gutentags_generate_on_missing = true
