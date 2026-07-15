@@ -14,11 +14,11 @@ local map = vim.keymap.set
 -- to resolve the longest matching mapping first.
 map({ "n", "x" }, "<Space>", "<Nop>", { desc = "Leader key (no-op)", silent = true })
 
--- window navigation
-map("n", "<C-h>", "<C-w>h", { desc = "Go to Left Window" })
-map("n", "<C-j>", "<C-w>j", { desc = "Go to Lower Window" })
-map("n", "<C-k>", "<C-w>k", { desc = "Go to Upper Window" })
-map("n", "<C-l>", "<C-w>l", { desc = "Go to Right Window" })
+-- window navigation (normal + terminal mode)
+map({ "n", "t" }, "<C-h>", "<cmd>wincmd h<cr>", { desc = "Go to Left Window" })
+map({ "n", "t" }, "<C-j>", "<cmd>wincmd j<cr>", { desc = "Go to Lower Window" })
+map({ "n", "t" }, "<C-k>", "<cmd>wincmd k<cr>", { desc = "Go to Upper Window" })
+map({ "n", "t" }, "<C-l>", "<cmd>wincmd l<cr>", { desc = "Go to Right Window" })
 
 -- better up/down (gj/gk for wrapped lines)
 map({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
@@ -91,9 +91,10 @@ map("n", "]w", diagnostic_goto(true, "WARN"), { desc = "Next Warning" })
 map("n", "[w", diagnostic_goto(false, "WARN"), { desc = "Prev Warning" })
 
 -- misc
-map({"n", "x"}, "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next Search Result" })
-map({"n", "x"}, "N", "'nN'[v:searchforward].'zv'", { expr = true, desc = "Prev Search Result" })
-map("n", "<leader>ur", "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>", { desc = "Redraw / Clear hlsearch / Diff Update" })
+map({ "n", "x" }, "n", "'Nn'[v:searchforward].'zv'", { expr = true, desc = "Next Search Result" })
+map({ "n", "x" }, "N", "'nN'[v:searchforward].'zv'", { expr = true, desc = "Prev Search Result" })
+map("n", "<leader>ur", "<Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR>",
+  { desc = "Redraw / Clear hlsearch / Diff Update" })
 map("n", "<leader>fn", "<cmd>enew<cr>", { desc = "New File" })
 map("n", "<leader>qq", "<cmd>qa<cr>", { desc = "Quit All" })
 map("n", "<leader>-", "<C-W>s", { desc = "Split Window Below" })
@@ -135,7 +136,7 @@ map({ "n", "t" }, "<c-/>", function()
   open_terminal(vim.fn.getcwd())
 end, { desc = "Terminal (cwd)" })
 
--- terminal insert: use <C-\\><C-n> to return to normal mode
+-- terminal insert: use <C-\><C-n> to return to normal mode
 map("t", "<C-\\><C-n>", "<C-\\><C-n>", { desc = "Terminal Normal Mode" })
 
 -- undo break-points in insert mode
