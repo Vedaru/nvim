@@ -11,7 +11,10 @@ return {
       vim.g.gutentags_ctags_executable = vim.fn.expand("~/.local/bin/ctags")
       vim.g.gutentags_cache_dir = cache
       vim.g.gutentags_ctags_tagfile = ".tags"
-      vim.g.gutentags_project_root = { ".git", ".hg", ".svn" }
+
+      -- Don't require .git — tag any file, per-directory
+      vim.g.gutentags_project_root = {}
+      vim.g.gutentags_add_default_project_roots = false
 
       vim.g.gutentags_generate_on_new = true
       vim.g.gutentags_generate_on_missing = true
