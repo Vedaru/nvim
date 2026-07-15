@@ -36,6 +36,7 @@ return {
     },
     {
       "<leader>qd",
+{      "<leader>qx",      function()        local P = require("persistence")        local file = P.current()        if vim.fn.filereadable(file) == 1 then          os.remove(file)          vim.notify("Session deleted: " .. vim.fn.fnamemodify(file, ":t"), vim.log.levels.INFO)        end        P.stop()        vim.notify("Session tracking stopped -- safe to :q", vim.log.levels.INFO)      end,      desc = "Delete Session and Stop Tracking",    },
       function()
         require("persistence").stop()
         vim.cmd("qa")
