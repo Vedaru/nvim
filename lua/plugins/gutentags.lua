@@ -34,9 +34,9 @@ return {
         "--fields=+lnS",
         "--extras=+q",
         "--output-format=e-ctags",
+        "--languages=-CSS,-JSON,-Markdown,-YAML,-HTML,-XML",
       }
 
-      -- Prevent tags for $HOME (noise from ~/.git, dotfile repos)
       vim.g.gutentags_project_root_blacklist = { vim.fn.expand("~") }
 
       vim.opt.tags:prepend(cache .. "/*")
