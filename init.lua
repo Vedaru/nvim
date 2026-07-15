@@ -2,13 +2,29 @@
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- No TypeScript LSP — Biome handles format + lint only
--- Suppress LazyVim import-order check (we use explicit imports, not the monolithic "lazyvim.plugins")
 vim.g.lazyvim_check_order = false
--- 关闭 LazyVim 启动欢迎 / news 弹窗
 vim.g.lazyvim_news = false
 
--- bootstrap lazy.nvim, LazyVim and your plugins
-require("config.lazy")
+-- gutentags: add to rtp + set vars BEFORE plugin auto-loads
+vim.opt.rtp:prepend(vim.fn.expand("~/.local/share/nvim/site/pack/plugins/start/vim-gutentags"))
+vim.g.gutentags_ctags_executable = vim.fn.expand("~/.local/bin/ctags")
+vim.g.gutentags_project_root = { ".git", ".hg", ".svn" }
+vim.g.gutentags_ctags_tagfile = ".tags"
+vim.g.gutentags_exclude_filetypes = {
+  "gitcommit", "gitrebase", "help", "markdown",
+  "text", "startify", "fugitive", "fugitiveblame",
+}
+vim.g.gutentags_generate_on_new = true
+vim.g.gutentags_generate_on_missing = true
+vim.g.gutentags_generate_on_write = true
+vim.g.gutentags_generate_on_empty_buffer = false
+vim.g.gutentags_cache_dir = vim.fn.expand("~/.cache/gutentags")
+vim.g.gutentags_ctags_extra_args = {
+  "--fields=+lnS",
+  "--extras=+q",
+  "--output-format=e-ctags",
+}
+vim.opt.tags:prepend(vim.fn.expand("~/.cache/gutentags/") .. "/*")
 
--- keymaps 由 LazyVim 自动从 lua/config/keymaps.lua 加载，无需手动注册
+-- bootstrap lazy.nvim
+require("config.lazy")
