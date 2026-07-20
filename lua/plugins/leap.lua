@@ -4,6 +4,7 @@
 return {
   {
     "leap.nvim",
+    url = "https://codeberg.org/andyg/leap.nvim",
     dir = vim.fn.stdpath("data") .. "/lazy/leap.nvim",
     enabled = true,
     keys = function()
@@ -17,6 +18,7 @@ return {
   },
   {
     "leap.nvim",
+    url = "https://codeberg.org/andyg/leap.nvim",
     dir = vim.fn.stdpath("data") .. "/lazy/leap.nvim",
     enabled = true,
     keys = {

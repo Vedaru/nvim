@@ -1,23 +1,26 @@
 #!/usr/bin/env bash
-# install-nvim.sh — Zero-network Neovim plugin bootstrapper
+# install-nvim.sh — Zero-network Neovim bootstrapper
 # ------------------------------------------------------------------
-# Run ONCE (with network) to populate ~/.local/share/nvim/lazy/ with
-# all required plugins.  After this script finishes Neovim runs
-# completely offline — no git fetches, no package downloads.
+# Clones all required plugins + copies config files from this repo
+# to ~/.config/nvim.  Run ONCE with network.
+#
+# After this script finishes, launch nvim once (online) so
+# treesitter can auto-install parsers (ensure_installed).
+# Then you're fully offline.
 #
 # Usage:
-#   chmod +x install-nvim.sh
 #   ./install-nvim.sh              # full install (config + plugins)
 #   ./install-nvim.sh --plugins    # plugins only (skip config copy)
 #   ./install-nvim.sh --help       # show this help
 #
 # Requirements:
-#   - git, tar, curl (or wget)
+#   - git, curl (or wget)
 #   - Network access to GitHub / Codeberg
 # ------------------------------------------------------------------
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 NVIM_CONFIG="${NVIM_CONFIG:-$HOME/.config/nvim}"
 NVIM_DATA="${NVIM_DATA:-$HOME/.local/share/nvim}"
 LAZY_DIR="$NVIM_DATA/lazy"
@@ -40,19 +43,27 @@ declare -A PLUGINS=(
   ["persistence.nvim"]="https://github.com/folke/persistence.nvim.git"
   ["mini.icons"]="https://github.com/echasnovski/mini.icons.git"
   ["mini.statusline"]="https://github.com/echasnovski/mini.statusline.git"
-  ["leap.nvim"]="https://github.com/ggandor/leap.nvim.git"
+  ["leap.nvim"]="https://codeberg.org/andyg/leap.nvim"
+)
+
+# ── files to copy from repo → ~/.config/nvim ─────────────────────
+CONFIG_FILES=(
+  "init.lua"
+  "lazy-lock.json"
+  "lazyvim.json"
+  "lua"
 )
 
 # ── banner ────────────────────────────────────────────────────────
 banner() {
   cat <<'EOF'
-╔══════════════════════════════════════════════════════════╗
-║           Neovim Zero-Network Plugin Installer           ║
-║                                                        ║
-║  Clones all required plugins, strips .git directories,  ║
-║  and sets up a fully offline Neovim environment.        ║
-║  Run this script once, then go offline forever.         ║
-╚══════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════╗
+║           Neovim Zero-Network Plugin Installer       ║
+║                                                      ║
+║  Clones all required plugins, copies config files,   ║
+║  and sets up a fully offline Neovim environment.     ║
+║  Run this script once, then go offline forever.      ║
+╚══════════════════════════════════════════════════════╝
 EOF
 }
 
@@ -87,6 +98,32 @@ main() {
 
   banner
 
+  # --- config ---
+  if [[ "${1:-}" != "--plugins-only" ]]; then
+    echo ""
+    echo "── Installing config files ─────────────────────────"
+    mkdir -p "$NVIM_CONFIG"
+
+    for item in "${CONFIG_FILES[@]}"; do
+      local src="$SCRIPT_DIR/$item"
+      local dst="$NVIM_CONFIG/$item"
+
+      if [[ ! -e "$src" ]]; then
+        echo "  [warn] $item not found in repo — skipping"
+        continue
+      fi
+
+      # If it's a directory, merge; if it's a file, copy
+      if [[ -d "$src" ]]; then
+        mkdir -p "$dst"
+        cp -r "$src"/* "$dst"/
+      else
+        cp "$src" "$dst"
+      fi
+      echo "  [copy] $item → $dst"
+    done
+  fi
+
   # --- plugins ---
   if [[ "${1:-}" != "--config-only" ]]; then
     echo ""
@@ -111,16 +148,19 @@ main() {
     fi
   fi
 
-  # --- config ---
-  if [[ "${1:-}" != "--plugins-only" ]]; then
-    echo ""
-    echo "── Config is at $NVIM_CONFIG ───────────────────────"
-    echo "   (managed separately — copy your init.lua + lua/ tree)"
-  fi
-
+  # --- post-install ---
   echo ""
-  echo "Done. Neovim is ready for zero-network use."
-  echo "Plugins are at: $LAZY_DIR"
+  echo "── Next steps ───────────────────────────────────────"
+  echo ""
+  echo "  1. Launch nvim once (online) so treesitter can"
+  echo "     auto-install parsers (see ensure_installed in"
+  echo "     lua/plugins/treesitter.lua)."
+  echo "  2. Or run inside nvim: :TSInstall all"
+  echo "  3. After that, Neovim is fully offline-capable."
+  echo ""
+  echo "Done."
+  echo "Config:  $NVIM_CONFIG"
+  echo "Plugins: $LAZY_DIR"
 }
 
 main "$@"

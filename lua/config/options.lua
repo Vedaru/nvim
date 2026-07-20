@@ -76,8 +76,11 @@ vim.g.clipboard = {
 }
 
 -- ── 代理（GFW 环境下 treesitter / mason 下载用）─────────────────────
-vim.env.https_proxy = "http://127.0.0.1:7897"
-vim.env.http_proxy = "http://127.0.0.1:7897"
+-- 不要在这里设置 vim.env.http(s)_proxy —— 会泄露到集成终端
+-- 如有需要请在 Mason setup 里配置 proxy 参数：
+--   require("mason").setup({ proxies = { "http://127.0.0.1:7897" } })
+-- vim.env.https_proxy = "http://127.0.0.1:7897"
+-- vim.env.http_proxy = "http://127.0.0.1:7897"
 
 -- 默认 yank/delete/paste 使用系统剪贴板（"+ 寄存器）
 vim.o.clipboard = "unnamedplus"
@@ -104,6 +107,16 @@ end
 vim.opt.sessionoptions:remove("terminal")
 vim.opt.sessionoptions:remove("options")
 vim.opt.sessionoptions:remove("localoptions")
+
+-- ── Terminal ──────────────────────────────────────────────────────
+vim.api.nvim_create_autocmd("TermOpen", {
+  group = vim.api.nvim_create_augroup("custom-terminal", { clear = true }),
+  callback = function()
+    vim.opt_local.number = false
+    vim.opt_local.relativenumber = false
+    vim.opt_local.signcolumn = "no"
+  end,
+})
 
 -- ── Tags ──────────────────────────────────────────────────────────
 -- followscs: respects ignorecase + smartcase for tag matching
