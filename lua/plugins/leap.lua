@@ -1,6 +1,6 @@
 -- ~/.config/nvim/lua/plugins/leap.lua
--- Minimal 2-char jump (zero-network), s/S/gs mappings.
--- f/F/t/T stay at Vim defaults; flash.nvim is not used.
+-- Real leap.nvim (ggandor/leap.nvim, installed locally, zero-network)
+-- s/S/gs 2-char jump; f/F/t/T enhanced with labels.
 return {
   {
     "leap.nvim",
@@ -20,8 +20,8 @@ return {
     dir = vim.fn.stdpath("data") .. "/lazy/leap.nvim",
     enabled = true,
     keys = {
-      { "s",  mode = { "n", "x", "o" }, desc = "Leap Forward to" },
-      { "S",  mode = { "n", "x", "o" }, desc = "Leap Backward to" },
+      { "s",  mode = { "n", "x", "o" }, desc = "Leap Forward" },
+      { "S",  mode = { "n", "x", "o" }, desc = "Leap Backward" },
       { "gs", mode = { "n", "x", "o" }, desc = "Leap from Windows" },
     },
     config = function(_, opts)
@@ -30,13 +30,10 @@ return {
         leap.opts[k] = v
       end
       leap.add_default_mappings(true)
-      -- Best-effort: real leap.nvim sets x/X in visual/op-pending; ours doesn't.
+      -- Real leap sets x/X in visual/op-pending mode; remove so they don't
+      -- shadow vim's native x (delete char) in those modes.
       pcall(vim.keymap.del, { "x", "o" }, "x")
       pcall(vim.keymap.del, { "x", "o" }, "X")
-      -- Wire s/S/gs to leap functions (lazy.nvim keys table only handles lazy-load trigger)
-      vim.keymap.set({ "n", "x", "o" }, "s",  function() leap.leap()              end, { desc = "Leap Forward" })
-      vim.keymap.set({ "n", "x", "o" }, "S",  function() leap.leap_backward()     end, { desc = "Leap Backward" })
-      vim.keymap.set({ "n", "x", "o" }, "gs", function() leap.leap_from_windows() end, { desc = "Leap from Windows" })
     end,
   },
 }
