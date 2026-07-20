@@ -1,21 +1,29 @@
 #!/usr/bin/env bash
-# install-nvim.sh — Zero-network Neovim bootstrapper
+# install-nvim.sh — Hybrid Neovim bootstrapper (online → offline)
 # ------------------------------------------------------------------
-# Clones all required plugins + copies config files from this repo
-# to ~/.config/nvim.  Run ONCE with network.
+# Two modes:
+#   ONLINE  (default):  clone plugins from GitHub/Codeberg, compile
+#                        treesitter parsers, then optionally bundle
+#                        everything into vendor/ for offline reuse.
+#   OFFLINE (--offline): restore plugins + parsers + config from a
+#                        pre-built vendor/ directory — zero network.
 #
-# After this script finishes, launch nvim once (online) so
-# treesitter can auto-install parsers (ensure_installed).
-# Then you're fully offline.
+# Typical workflow:
+#   1. Run once online:        ./install-nvim.sh
+#   2. (optional) Bundle:      ./install-nvim.sh --bundle
+#   3. Distribute the repo + vendor/ to air-gapped machines.
+#   4. On the air-gapped box:  ./install-nvim.sh --offline
 #
 # Usage:
-#   ./install-nvim.sh              # full install (config + plugins)
-#   ./install-nvim.sh --plugins    # plugins only (skip config copy)
+#   ./install-nvim.sh              # online full install
+#   ./install-nvim.sh --offline    # offline restore from vendor/
+#   ./install-nvim.sh --bundle     # bundle plugins+parsers into vendor/
 #   ./install-nvim.sh --help       # show this help
 #
-# Requirements:
-#   - git, curl (or wget)
+# Requirements (online mode only):
+#   - git, curl, tar
 #   - Network access to GitHub / Codeberg
+#   - tree-sitter CLI (for parser compilation; npm i -g tree-sitter-cli)
 # ------------------------------------------------------------------
 
 set -euo pipefail
@@ -24,6 +32,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 NVIM_CONFIG="${NVIM_CONFIG:-$HOME/.config/nvim}"
 NVIM_DATA="${NVIM_DATA:-$HOME/.local/share/nvim}"
 LAZY_DIR="$NVIM_DATA/lazy"
+PARSER_DIR="$NVIM_DATA/site/parser"
+VENDOR_DIR="$SCRIPT_DIR/vendor"
 
 # ── plugin list (name → URL) ──────────────────────────────────────
 declare -A PLUGINS=(
@@ -46,121 +56,195 @@ declare -A PLUGINS=(
   ["leap.nvim"]="https://codeberg.org/andyg/leap.nvim"
 )
 
-# ── files to copy from repo → ~/.config/nvim ─────────────────────
-CONFIG_FILES=(
-  "init.lua"
-  "lazy-lock.json"
-  "lazyvim.json"
-  "lua"
-)
+# ── config files to install ───────────────────────────────────────
+CONFIG_FILES=("init.lua" "lazy-lock.json" "lazyvim.json" "lua")
 
 # ── banner ────────────────────────────────────────────────────────
 banner() {
   cat <<'EOF'
-╔══════════════════════════════════════════════════════╗
-║           Neovim Zero-Network Plugin Installer       ║
-║                                                      ║
-║  Clones all required plugins, copies config files,   ║
-║  and sets up a fully offline Neovim environment.     ║
-║  Run this script once, then go offline forever.      ║
-╚══════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════╗
+║         Neovim Hybrid Installer (online → offline)       ║
+╚══════════════════════════════════════════════════════════╝
 EOF
 }
 
 # ── helpers ───────────────────────────────────────────────────────
 clone_one() {
-  local name="$1"
-  local url="$2"
-  local dest="$LAZY_DIR/$name"
-
-  if [[ -d "$dest" ]]; then
-    echo "  [skip] $name (already exists)"
-    return 0
-  fi
-
+  local name="$1" url="$2" dest="$LAZY_DIR/$name"
+  if [[ -d "$dest" ]]; then echo "  [skip] $name"; return 0; fi
   echo "  [clone] $name ← $url"
   GIT_TERMINAL_PROMPT=0 git clone --depth 1 --filter=blob:none "$url" "$dest" 2>&1 | sed 's/^/    /'
+  rm -rf "$dest/.git"
 }
 
-strip_git() {
-  local dir="$1"
-  if [[ -d "$dir/.git" ]]; then
-    rm -rf "$dir/.git"
+install_config() {
+  echo ""
+  echo "── Config ───────────────────────────────────────────"
+  mkdir -p "$NVIM_CONFIG"
+  for item in "${CONFIG_FILES[@]}"; do
+    local src="$SCRIPT_DIR/$item" dst="$NVIM_CONFIG/$item"
+    if [[ ! -e "$src" ]]; then echo "  [warn] $item missing"; continue; fi
+    if [[ -d "$src" ]]; then mkdir -p "$dst"; cp -r "$src"/* "$dst"/
+    else cp "$src" "$dst"; fi
+    echo "  [copy] $item"
+  done
+}
+
+install_config_offline() {
+  echo ""
+  echo "── Config (offline) ─────────────────────────────────"
+  mkdir -p "$NVIM_CONFIG"
+  local cfg_src="$VENDOR_DIR/config"
+  if [[ ! -d "$cfg_src" ]]; then
+    echo "  [FAIL] vendor/config/ not found — no config to restore"
+    exit 1
   fi
+  cp -r "$cfg_src"/* "$NVIM_CONFIG"/
+  echo "  [restore] $cfg_src → $NVIM_CONFIG"
+}
+
+install_plugins_offline() {
+  echo ""
+  echo "── Plugins (offline) ────────────────────────────────"
+  local src="$VENDOR_DIR/plugins"
+  if [[ ! -d "$src" ]]; then
+    echo "  [FAIL] vendor/plugins/ not found — run --bundle first"
+    exit 1
+  fi
+  mkdir -p "$LAZY_DIR"
+  for d in "$src"/*/; do
+    local name="$(basename "$d")"
+    local dst="$LAZY_DIR/$name"
+    if [[ -d "$dst" ]]; then echo "  [skip] $name"; continue; fi
+    cp -r "$d" "$dst"
+    echo "  [restore] $name"
+  done
+}
+
+install_parsers_offline() {
+  echo ""
+  echo "── Parsers (offline) ────────────────────────────────"
+  local src="$VENDOR_DIR/parsers"
+  if [[ ! -d "$src" ]]; then
+    echo "  [warn] vendor/parsers/ not found — no parsers to restore"
+    echo "         treesitter will still work, just without offline parsers"
+    return 0
+  fi
+  mkdir -p "$PARSER_DIR"
+  local count=0
+  for so in "$src"/*.so; do
+    [[ -f "$so" ]] || continue
+    local name="$(basename "$so")"
+    cp "$so" "$PARSER_DIR/$name"
+    count=$((count + 1))
+  done
+  echo "  [restore] $count parser(s)"
+}
+
+bundle_plugins() {
+  echo ""
+  echo "── Bundling plugins → vendor/ ───────────────────────"
+  local dest="$VENDOR_DIR/plugins"
+  rm -rf "$dest"
+  mkdir -p "$dest"
+  for d in "$LAZY_DIR"/*/; do
+    local name="$(basename "$d")"
+    cp -r "$d" "$dest/$name"
+    rm -rf "$dest/$name/.git"
+    echo "  [bundle] $name"
+  done
+}
+
+bundle_parsers() {
+  echo ""
+  echo "── Bundling parsers → vendor/ ───────────────────────"
+  local dest="$VENDOR_DIR/parsers"
+  rm -rf "$dest"
+  if [[ -d "$PARSER_DIR" ]]; then
+    mkdir -p "$dest"
+    cp "$PARSER_DIR"/*.so "$dest"/ 2>/dev/null || true
+    echo "  [bundle] $(ls "$dest"/*.so 2>/dev/null | wc -l) parser(s)"
+  else
+    echo "  [warn] no parsers to bundle"
+  fi
+}
+
+bundle_config() {
+  echo ""
+  echo "── Bundling config → vendor/ ────────────────────────"
+  local dest="$VENDOR_DIR/config"
+  rm -rf "$dest"
+  mkdir -p "$dest"
+  for item in "${CONFIG_FILES[@]}"; do
+    local src="$SCRIPT_DIR/$item"
+    if [[ -d "$src" ]]; then cp -r "$src" "$dest/$item"
+    elif [[ -f "$src" ]]; then cp "$src" "$dest/$item"; fi
+    echo "  [bundle] $item"
+  done
 }
 
 # ── main ──────────────────────────────────────────────────────────
 main() {
-  if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-    sed -n '2,/^$/p' "$0" | sed 's/^# //'
-    exit 0
-  fi
+  local mode="${1:-}"
 
+  case "$mode" in
+    --help|-h)
+      sed -n '2,/^$/p' "$0" | sed 's/^# //'
+      exit 0
+      ;;
+    --bundle)
+      bundle_plugins
+      bundle_parsers
+      bundle_config
+      echo ""
+      echo "Done. vendor/ is ready for offline distribution."
+      echo "On the target machine: ./install-nvim.sh --offline"
+      exit 0
+      ;;
+    --offline)
+      banner
+      install_config_offline
+      install_plugins_offline
+      install_parsers_offline
+      echo ""
+      echo "Done. Neovim is ready for zero-network use."
+      exit 0
+      ;;
+  esac
+
+  # ── online mode ────────────────────────────────────────────────
   banner
 
-  # --- config ---
-  if [[ "${1:-}" != "--plugins-only" ]]; then
-    echo ""
-    echo "── Installing config files ─────────────────────────"
-    mkdir -p "$NVIM_CONFIG"
-
-    for item in "${CONFIG_FILES[@]}"; do
-      local src="$SCRIPT_DIR/$item"
-      local dst="$NVIM_CONFIG/$item"
-
-      if [[ ! -e "$src" ]]; then
-        echo "  [warn] $item not found in repo — skipping"
-        continue
-      fi
-
-      # If it's a directory, merge; if it's a file, copy
-      if [[ -d "$src" ]]; then
-        mkdir -p "$dst"
-        cp -r "$src"/* "$dst"/
-      else
-        cp "$src" "$dst"
-      fi
-      echo "  [copy] $item → $dst"
-    done
+  # config
+  if [[ "$mode" != "--plugins-only" ]]; then
+    install_config
   fi
 
-  # --- plugins ---
-  if [[ "${1:-}" != "--config-only" ]]; then
+  # plugins
+  if [[ "$mode" != "--config-only" ]]; then
     echo ""
-    echo "── Installing plugins ──────────────────────────────"
+    echo "── Plugins (online) ─────────────────────────────────"
     mkdir -p "$LAZY_DIR"
-
     for name in "${!PLUGINS[@]}"; do
       clone_one "$name" "${PLUGINS[$name]}"
     done
-
-    echo ""
-    echo "── Stripping .git directories (zero-network) ───────"
-    for d in "$LAZY_DIR"/*/; do
-      strip_git "$d"
-    done
-
-    # Ensure leap.nvim has the lua/leap/init.lua entry point
-    if [[ -d "$LAZY_DIR/leap.nvim" ]] && [[ ! -f "$LAZY_DIR/leap.nvim/lua/leap/init.lua" ]]; then
-      echo "  [warn] leap.nvim cloned but missing lua/leap/init.lua —"
-      echo "         the plugin may need a custom entry point."
-      echo "         Copy your lua/leap/init.lua into $LAZY_DIR/leap.nvim/"
-    fi
   fi
 
-  # --- post-install ---
+  # parsers — nvim-treesitter handles this via ensure_installed
+  # on first nvim launch.  Just remind the user.
   echo ""
-  echo "── Next steps ───────────────────────────────────────"
+  echo "── Treesitter parsers ───────────────────────────────"
+  echo "   Launch nvim once (online) and it will auto-install"
+  echo "   all parsers from the ensure_installed list."
   echo ""
-  echo "  1. Launch nvim once (online) so treesitter can"
-  echo "     auto-install parsers (see ensure_installed in"
-  echo "     lua/plugins/treesitter.lua)."
-  echo "  2. Or run inside nvim: :TSInstall all"
-  echo "  3. After that, Neovim is fully offline-capable."
+  echo "   Then run:  ./install-nvim.sh --bundle"
+  echo "   to freeze everything into vendor/ for offline use."
+
   echo ""
   echo "Done."
   echo "Config:  $NVIM_CONFIG"
   echo "Plugins: $LAZY_DIR"
+  echo "Parsers: $PARSER_DIR (after first nvim launch)"
 }
 
 main "$@"

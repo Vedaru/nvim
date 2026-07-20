@@ -1,0 +1,10 @@
+{
+  "runtime.version": "LuaJIT",
+  "runtime.path": ["lua/?.lua", "lua/?/init.lua"],
+  "workspace.checkThirdParty": false,
+  "runtime.path.pathStrict": true,
+  "workspace.library": ["$VIMRUNTIME"],
+  "Lua.diagnostics.libraryFiles": "Disable",
+  "Lua.workspace.checkThirdParty": "Disable",
+  "diagnostics.globals": ["describe", "it", "P"]
+}
