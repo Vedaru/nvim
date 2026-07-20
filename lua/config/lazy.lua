@@ -24,11 +24,11 @@ require("lazy").setup({
     lazy = false,
     version = false,
   },
-  install = { colorscheme = { "tokyonight", "habamax" } },
+  install = { missing = false, colorscheme = { "tokyonight", "habamax" } },
 
   -- ZERO NETWORK: never check for updates, never auto-install, never auto-update lazy itself
   checker = { enabled = false },
-  lockfile = vim.fn.stdpath("config") .. "/lazy-lock.json",
+  lockfile = "",
   change_detection = { enabled = false },
   pkg = { enabled = false },
 

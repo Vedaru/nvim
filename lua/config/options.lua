@@ -61,17 +61,16 @@ opt.list = true
 opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 
 -- ── 剪贴板 ──────────────────────────────────────────────────────────
--- WSL 下 xclip 读 Windows 富文本剪贴板会报 "target STRING not available"
--- 用 Windows 原生工具替代，stable 且无格式转换问题
+-- Use native Linux clipboard tools (Wayland: wl-copy, X11: xclip)
 vim.g.clipboard = {
-  name = "WSL-Clipboard",
+  name = "Linux-Clipboard",
   copy = {
-    ["+"] = { "clip.exe" },
-    ["*"] = { "clip.exe" },
+    ["+"] = { "wl-copy", "--foreground", "--type", "text/plain" },
+    ["*"] = { "wl-copy", "--primary", "--foreground", "--type", "text/plain" },
   },
   paste = {
-    ["+"] = { "sh", "-c", "powershell.exe -NoProfile -Command 'Get-Clipboard -Raw' | tr -d '\r'" },
-    ["*"] = { "sh", "-c", "powershell.exe -NoProfile -Command 'Get-Clipboard -Raw' | tr -d '\r'" },
+    ["+"] = { "wl-paste", "--no-newline" },
+    ["*"] = { "wl-paste", "--primary", "--no-newline" },
   },
   cache_enabled = 1,
 }
