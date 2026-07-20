@@ -1,6 +1,6 @@
 -- ~/.config/nvim/lua/plugins/leap.lua
--- Real leap.nvim (ggandor/leap.nvim, installed locally, zero-network)
--- s/S/gs 2-char jump; f/F/t/T enhanced with labels.
+-- Real leap.nvim (ggandor/leap.nvim), zero-network, Sneak-style mappings.
+-- s/S forward/backward 2-char jump; gs from other windows.
 return {
   {
     "leap.nvim",
@@ -22,18 +22,21 @@ return {
     keys = {
       { "s",  mode = { "n", "x", "o" }, desc = "Leap Forward" },
       { "S",  mode = { "n", "x", "o" }, desc = "Leap Backward" },
-      { "gs", mode = { "n", "x", "o" }, desc = "Leap from Windows" },
+      { "gs", mode = "n",              desc = "Leap from Windows" },
     },
     config = function(_, opts)
       local leap = require("leap")
       for k, v in pairs(opts) do
         leap.opts[k] = v
       end
-      leap.add_default_mappings(true)
-      -- Real leap sets x/X in visual/op-pending mode; remove so they don't
-      -- shadow vim's native x (delete char) in those modes.
-      pcall(vim.keymap.del, { "x", "o" }, "x")
-      pcall(vim.keymap.del, { "x", "o" }, "X")
+      -- Sneak-style: s forward, S backward, gs from other windows
+      -- (add_default_mappings() is deprecated; use <Plug> keys instead)
+      vim.keymap.set({ "n", "x", "o" }, "s",  "<Plug>(leap-forward)",      { desc = "Leap Forward" })
+      vim.keymap.set({ "n", "x", "o" }, "S",  "<Plug>(leap-backward)",     { desc = "Leap Backward" })
+      vim.keymap.set("n",              "gs", "<Plug>(leap-from-window)",   { desc = "Leap from Windows" })
+      -- Exclusive pair for visual/operator-pending
+      vim.keymap.set({ "x", "o" },      "x",  "<Plug>(leap-forward-till)",  { desc = "Leap Forward Till" })
+      vim.keymap.set({ "x", "o" },      "X",  "<Plug>(leap-backward-till)", { desc = "Leap Backward Till" })
     end,
   },
 }
