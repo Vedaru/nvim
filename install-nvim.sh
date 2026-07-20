@@ -40,7 +40,7 @@ declare -A PLUGINS=(
   ["persistence.nvim"]="https://github.com/folke/persistence.nvim.git"
   ["mini.icons"]="https://github.com/echasnovski/mini.icons.git"
   ["mini.statusline"]="https://github.com/echasnovski/mini.statusline.git"
-  ["leap.nvim"]="https://codeberg.org/andyg/leap.nvim.git"
+  ["leap.nvim"]="https://github.com/ggandor/leap.nvim.git"
 )
 
 # ── banner ────────────────────────────────────────────────────────
