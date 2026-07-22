@@ -117,13 +117,16 @@ function M.reset_line_numbers()
     vim.o.relativenumber = true
     vim.o.statuscolumn = [[%!v:lua.LazyVim.statuscolumn()]]
     for _, win in ipairs(vim.api.nvim_list_wins()) do
-      vim.api.nvim_win_call(win, function()
-        vim.cmd("setlocal statuscolumn&")
-        vim.cmd("setlocal number&")
-        vim.cmd("setlocal relativenumber&")
-        vim.wo.number = true
-        vim.wo.relativenumber = true
-      end)
+      local buf = vim.api.nvim_win_get_buf(win)
+      if vim.bo[buf].buftype ~= "terminal" then
+        vim.api.nvim_win_call(win, function()
+          vim.cmd("setlocal statuscolumn&")
+          vim.cmd("setlocal number&")
+          vim.cmd("setlocal relativenumber&")
+          vim.wo.number = true
+          vim.wo.relativenumber = true
+        end)
+      end
     end
     pcall(function()
       require("snacks.statuscolumn").setup()

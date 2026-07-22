@@ -14,6 +14,13 @@ return {
         hidden = true,
         ignored = true,
         follow = true,
+        jump = {
+          -- When selecting a buffer from the picker, switch to its existing
+          -- window instead of replacing the current window's buffer.
+          -- Prevents terminal window-local options (number=false) from
+          -- leaking into code-file windows.
+          reuse_win = true,
+        },
         sources = {
           git_diff = {
             -- Suppress "Command failed" noise when outside a git repo.

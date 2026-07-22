@@ -32,7 +32,7 @@ function M.buffers(opts, ctx)
         vim.bo[buf].readonly and "=" or "",
         info.changed == 1 and "+" or "",
       }
-      table.insert(items, {
+      local item = {
         flags = table.concat(flags),
         buf = buf,
         name = vim.api.nvim_buf_get_name(buf),
@@ -41,8 +41,14 @@ function M.buffers(opts, ctx)
         file = name,
         info = info,
         pos = mark[1] ~= 0 and mark or { info.lnum, 0 },
-      })
-      items[#items].text = Snacks.picker.util.text(items[#items], { "buf", "name", "filetype", "buftype" })
+      }
+      if vim.bo[buf].buftype == "terminal" then
+        -- Preview terminal buffers without line numbers / signcolumn,
+        -- matching the real terminal window appearance.
+        item.wo = { number = false, relativenumber = false, signcolumn = "no" }
+      end
+      table.insert(items, item)
+      items[#items].text = Snacks.picker.util.text(item, { "buf", "name", "filetype", "buftype" })
     end
   end
   if opts.sort_lastused then

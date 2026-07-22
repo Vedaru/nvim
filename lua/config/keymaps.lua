@@ -4,6 +4,33 @@
 
 local map = vim.keymap.set
 
+-- Neovim 0.12 ships built-in LSP keymaps (gra, grr, gO, <C-S>, <C-W>d, …)
+-- that are always global but require an active LSP client to function.
+-- In a no-LSP / zero-network setup they show up in the keymap picker but
+-- error when invoked.  Delete them so <leader>? only shows real mappings.
+-- Also removes the diagnostic [D/]D defaults (LSP-backed), plus all
+-- <C-S> variants (LSP signature help) across every mode.
+do
+  local del = vim.keymap.del
+  local builtin_lsp = {
+    -- LSP goto / code-action / codelens
+    { "n", "gra" }, { "n", "grr" }, { "n", "grn" },
+    { "n", "grt" }, { "n", "gri" }, { "n", "grx" },
+    { "n", "gO" },
+    -- LSP signature help in every mode
+    { "v", "<C-S>" }, { "x", "<C-S>" }, { "i", "<C-S>" }, { "s", "<C-S>" },
+    -- LSP code-action in visual / select
+    { "v", "gra" }, { "x", "gra" },
+    -- LSP diagnostics popup (overlaps with snacks.statuscolumn)
+    { "n", "<C-W>d" }, { "n", "<C-W><C-D>" },
+    -- LSP diagnostic first / last (not remapped by user keymaps below)
+    { "n", "[D" }, { "n", "]D" },
+  }
+  for _, spec in ipairs(builtin_lsp) do
+    pcall(del, spec[1], spec[2])
+  end
+end
+
 -- <leader> prefix: make the raw <Space> key itself a no-op.
 -- By default, Normal-mode <Space> is equivalent to `l` (cursor right).
 -- Since <Space> is also our <leader>, if Neovim ever falls through to the

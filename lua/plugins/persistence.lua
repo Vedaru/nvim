@@ -83,6 +83,20 @@ local P = require("persistence")
         end
       end
 
+      -- Wipe leftover empty [No Name] buffers that session restore leaves
+      -- behind (saved via badd, never cleaned by the session's built-in
+      -- wipebuf guard because they still have a visible window).
+      for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_valid(buf) and buf ~= vim.api.nvim_get_current_buf() then
+          if vim.api.nvim_buf_get_name(buf) == "" and not vim.bo[buf].modified then
+            local wins = vim.fn.win_findbuf(buf)
+            if #wins == 0 then
+              pcall(vim.api.nvim_buf_delete, buf, { force = true })
+            end
+          end
+        end
+      end
+
       if vim.bo.buftype == "terminal" then
         if P._active_dir then
           util.open_project_fallback(P._active_dir)

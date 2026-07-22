@@ -31,6 +31,12 @@ local ns_loc = vim.api.nvim_create_namespace("snacks.picker.preview.loc")
 -- > that was last closed are used again.  If this buffer has been edited in this
 -- > window, the values from back then are used.  Otherwise the values from the
 -- > last closed window where the buffer was edited last are used.
+--
+-- We must use explicit values rather than nil because nvim_set_option_value
+-- with nil does NOT reset window-local options (number, relativenumber,
+-- signcolumn, cursorline) to their global defaults — it leaves the local
+-- override in place.  Explicit values correctly overwrite the stale local
+-- settings left behind by the preview window.
 vim.api.nvim_create_autocmd("BufWinEnter", {
   group = vim.api.nvim_create_augroup("snacks.picker.preview.wo", { clear = true }),
   callback = function(ev)
@@ -43,10 +49,11 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
       return
     end
     vim.b[buf].snacks_previewed = nil
-    local reset = { "winhighlight", "cursorline", "number", "relativenumber", "signcolumn" }
-    for _, k in ipairs(reset) do
-      vim.api.nvim_set_option_value(k, nil, { win = win, scope = "local" })
-    end
+    vim.api.nvim_set_option_value("winhighlight", "", { win = win, scope = "local" })
+    vim.api.nvim_set_option_value("cursorline", true, { win = win, scope = "local" })
+    vim.api.nvim_set_option_value("number", true, { win = win, scope = "local" })
+    vim.api.nvim_set_option_value("relativenumber", true, { win = win, scope = "local" })
+    vim.api.nvim_set_option_value("signcolumn", "yes", { win = win, scope = "local" })
   end,
 })
 
@@ -63,8 +70,8 @@ function M.new(picker)
       wo = {
         cursorline = false,
         colorcolumn = "",
-        number = opts.win.preview.minimal ~= true,
-        relativenumber = false,
+        number = true,
+        relativenumber = true,
         list = false,
       },
     },
@@ -268,7 +275,7 @@ function M:reset()
 end
 
 function M:minimal()
-  self:wo({ number = false, relativenumber = false, signcolumn = "no" })
+  self:wo({ number = true, relativenumber = false, signcolumn = "no" })
 end
 
 -- create a new scratch buffer

@@ -109,12 +109,44 @@ vim.opt.sessionoptions:remove("options")
 vim.opt.sessionoptions:remove("localoptions")
 
 -- ── Terminal ──────────────────────────────────────────────────────
-vim.api.nvim_create_autocmd("TermOpen", {
+-- TermOpen handles initial creation; BufWinEnter handles re-display
+-- (e.g. after snacks picker previews the terminal buffer and the
+-- snacks BufWinEnter hack resets number/relativenumber to true).
+--
+-- Also: when a non-terminal buffer enters a window that previously
+-- showed a terminal, restore number/relativenumber to the global
+-- defaults (the terminal autocmd sets them to false, which is
+-- window-local and persists across buffer switches).
+vim.api.nvim_create_autocmd({ "TermOpen", "BufWinEnter" }, {
   group = vim.api.nvim_create_augroup("custom-terminal", { clear = true }),
-  callback = function()
-    vim.opt_local.number = false
-    vim.opt_local.relativenumber = false
-    vim.opt_local.signcolumn = "no"
+  callback = function(args)
+    local buftype = vim.bo[args.buf].buftype
+    if buftype == "terminal" then
+      -- Prevent the snacks BufWinEnter hack (which runs after us) from
+      -- overriding our terminal settings back to number=true.
+      vim.b[args.buf].snacks_previewed = nil
+      for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
+        vim.wo[win].number = false
+        vim.wo[win].relativenumber = false
+        vim.wo[win].signcolumn = "no"
+      end
+    else
+      -- Restore line numbers for non-terminal buffers that may have
+      -- inherited terminal window-local settings (e.g. when reuse_win
+      -- was false and the terminal replaced a code buffer in its window).
+      local win = vim.fn.bufwinid(args.buf)
+      if win ~= -1 and vim.api.nvim_win_is_valid(win) then
+        if not vim.wo[win].number then
+          vim.wo[win].number = true
+        end
+        if not vim.wo[win].relativenumber then
+          vim.wo[win].relativenumber = true
+        end
+        if vim.wo[win].signcolumn == "no" then
+          vim.wo[win].signcolumn = "yes"
+        end
+      end
+    end
   end,
 })
 
