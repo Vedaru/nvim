@@ -120,11 +120,11 @@ function M.reset_line_numbers()
       local buf = vim.api.nvim_win_get_buf(win)
       if vim.bo[buf].buftype ~= "terminal" then
         vim.api.nvim_win_call(win, function()
-          vim.cmd("setlocal statuscolumn&")
-          vim.cmd("setlocal number&")
-          vim.cmd("setlocal relativenumber&")
-          vim.wo.number = true
-          vim.wo.relativenumber = true
+          local opts = { scope = "local", win = win }
+          vim.api.nvim_set_option_value("statuscolumn", [[%!v:lua.LazyVim.statuscolumn()]], opts)
+          vim.api.nvim_set_option_value("number", true, opts)
+          vim.api.nvim_set_option_value("relativenumber", true, opts)
+          vim.api.nvim_set_option_value("signcolumn", "yes", opts)
         end)
       end
     end

@@ -57,12 +57,13 @@ vim.api.nvim_create_autocmd("VimResized", {
   command = "redraw!",
 })
 
--- Markdown: 默认完全展开，不按标题折叠
+-- Markdown: 默认完全展开，不按标题折叠，关闭拼写检查
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("markdown_unfold"),
   pattern = "markdown",
   callback = function()
     vim.opt_local.foldlevel = 99
+    vim.opt_local.spell = false
   end,
 })
 

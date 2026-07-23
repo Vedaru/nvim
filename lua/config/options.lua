@@ -112,38 +112,35 @@ vim.opt.sessionoptions:remove("localoptions")
 -- TermOpen handles initial creation; BufWinEnter handles re-display
 -- (e.g. after snacks picker previews the terminal buffer and the
 -- snacks BufWinEnter hack resets number/relativenumber to true).
---
--- Also: when a non-terminal buffer enters a window that previously
--- showed a terminal, restore number/relativenumber to the global
--- defaults (the terminal autocmd sets them to false, which is
--- window-local and persists across buffer switches).
 vim.api.nvim_create_autocmd({ "TermOpen", "BufWinEnter" }, {
   group = vim.api.nvim_create_augroup("custom-terminal", { clear = true }),
   callback = function(args)
-    local buftype = vim.bo[args.buf].buftype
-    if buftype == "terminal" then
+    if vim.bo[args.buf].buftype == "terminal" then
       -- Prevent the snacks BufWinEnter hack (which runs after us) from
       -- overriding our terminal settings back to number=true.
       vim.b[args.buf].snacks_previewed = nil
       for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
-        vim.wo[win].number = false
-        vim.wo[win].relativenumber = false
-        vim.wo[win].signcolumn = "no"
+        -- Must use scope=local to avoid corrupting the global value.
+        -- vim.wo[win].X = false silently sets the global too!
+        local opts = { scope = "local", win = win }
+        vim.api.nvim_set_option_value("number", false, opts)
+        vim.api.nvim_set_option_value("relativenumber", false, opts)
+        vim.api.nvim_set_option_value("signcolumn", "no", opts)
       end
     else
       -- Restore line numbers for non-terminal buffers that may have
-      -- inherited terminal window-local settings (e.g. when reuse_win
-      -- was false and the terminal replaced a code buffer in its window).
+      -- inherited terminal window-local settings.
       local win = vim.fn.bufwinid(args.buf)
       if win ~= -1 and vim.api.nvim_win_is_valid(win) then
+        local opts = { scope = "local", win = win }
         if not vim.wo[win].number then
-          vim.wo[win].number = true
+          vim.api.nvim_set_option_value("number", true, opts)
         end
         if not vim.wo[win].relativenumber then
-          vim.wo[win].relativenumber = true
+          vim.api.nvim_set_option_value("relativenumber", true, opts)
         end
         if vim.wo[win].signcolumn == "no" then
-          vim.wo[win].signcolumn = "yes"
+          vim.api.nvim_set_option_value("signcolumn", "yes", opts)
         end
       end
     end
