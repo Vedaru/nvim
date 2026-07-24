@@ -35,7 +35,6 @@ declare -A PLUGINS=(
   ["git-conflict.nvim"]="https://github.com/akinsho/git-conflict.nvim.git"
   ["gitsigns.nvim"]="https://github.com/lewis6991/gitsigns.nvim.git"
   ["grug-far.nvim"]="https://github.com/MagicDuck/grug-far.nvim.git"
-  ["persistence.nvim"]="https://github.com/folke/persistence.nvim.git"
   ["mini.icons"]="https://github.com/echasnovski/mini.icons.git"
   ["mini.statusline"]="https://github.com/echasnovski/mini.statusline.git"
   ["leap.nvim"]="https://codeberg.org/andyg/leap.nvim"

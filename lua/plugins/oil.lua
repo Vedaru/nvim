@@ -27,15 +27,16 @@ return {
           end
           dir = dir:gsub("\\", "/"):gsub("/+$", "")
 
-          local P = require("persistence")
-          local Config = require("persistence.config")
-          local name = dir:gsub("[\\/:]+", "%%")
-          local file = Config.options.dir .. name .. ".vim"
+          local S = require("config.session")
+          local file = S.file_for(dir)
 
           -- Blank session: cd + empty buffer so restore never leaves a black screen.
           vim.fn.writefile({ "cd " .. vim.fn.fnameescape(dir), "enew" }, file)
           oil.close()
-          P.switch(file)
+          -- Source the blank session directly (same effect as switch but we know it's tiny).
+          vim.cmd("silent! %bdelete!")
+          vim.cmd("source " .. vim.fn.fnameescape(file))
+          require("config.session").reset_line_numbers()
         end,
       },
       ["<CR>"] = function()
@@ -53,7 +54,10 @@ return {
         if util.is_sessions_dir(dir) and entry.name:match("%.vim$") then
           local full_path = dir .. entry.name
           oil.close()
-          require("persistence").switch(full_path)
+          -- Defer: Oil needs a tick to fully close before we wipe its buffers.
+          vim.schedule(function()
+            require("config.session").switch(full_path)
+          end)
         else
           require("oil").select()
         end
@@ -81,13 +85,42 @@ return {
   config = function(_, opts)
     require("oil").setup(opts)
 
-    -- <leader>o — oil sidebar at current file's directory
+    -- <leader>o — toggle: current file dir → project root (stops there)
+    local at_root = false
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "OilClose",
+      callback = function()
+        at_root = false
+      end,
+    })
+
     vim.keymap.set("n", "<leader>o", function()
-      local dir = vim.fn.expand("%:p:h")
-      if dir == "" or vim.fn.isdirectory(dir) ~= 1 then
-        dir = vim.fn.getcwd()
+      local oil = require("oil")
+      local oil_open = false
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "oil" then
+          oil_open = true
+          break
+        end
       end
+
+      if not oil_open then
+        at_root = false
+      elseif not at_root then
+        at_root = true
+      end
+
+      local dir
+      if at_root then
+        dir = require("config.session").project_root()
+      else
+        dir = vim.fn.expand("%:p:h")
+        if dir == "" or vim.fn.isdirectory(dir) ~= 1 then
+          dir = vim.fn.getcwd()
+        end
+      end
+
       require("oil").open(dir)
-    end, { desc = "Oil (current file dir)" })
+    end, { desc = "Oil (cycle: file dir → root → /)" })
   end,
 }

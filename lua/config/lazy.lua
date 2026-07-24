@@ -10,12 +10,10 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
   spec = {
-    -- Only the 4 LazyVim spec files we actually use (shadowed by lua/lazyvim/plugins/*)
-    -- down from the original 50+. Formatting, linting, util, xtras, and 40 extras skipped.
+    -- Only the 3 LazyVim spec files we actually use (shadowed by lua/lazyvim/plugins/*)
     { "LazyVim/LazyVim", import = "lazyvim.plugins.init" },
     { "LazyVim/LazyVim", import = "lazyvim.plugins.ui" },
     { "LazyVim/LazyVim", import = "lazyvim.plugins.editor" },
-    { "LazyVim/LazyVim", import = "lazyvim.plugins.colorscheme" },
 
     -- User plugin overrides
     { import = "plugins" },

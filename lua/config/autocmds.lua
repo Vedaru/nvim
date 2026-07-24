@@ -124,3 +124,33 @@ vim.api.nvim_create_autocmd("BufWinEnter", {
     end)
   end,
 })
+
+-- Terminal: disable line numbers / signcolumn, restore on non-terminal re-display.
+vim.api.nvim_create_autocmd({ "TermOpen", "BufWinEnter" }, {
+  group = augroup("terminal"),
+  callback = function(args)
+    if vim.bo[args.buf].buftype == "terminal" then
+      vim.b[args.buf].snacks_previewed = nil
+      for _, win in ipairs(vim.fn.win_findbuf(args.buf)) do
+        local o = { scope = "local", win = win }
+        vim.api.nvim_set_option_value("number", false, o)
+        vim.api.nvim_set_option_value("relativenumber", false, o)
+        vim.api.nvim_set_option_value("signcolumn", "no", o)
+      end
+    else
+      local win = vim.fn.bufwinid(args.buf)
+      if win ~= -1 and vim.api.nvim_win_is_valid(win) then
+        local o = { scope = "local", win = win }
+        if not vim.wo[win].number then
+          vim.api.nvim_set_option_value("number", true, o)
+        end
+        if not vim.wo[win].relativenumber then
+          vim.api.nvim_set_option_value("relativenumber", true, o)
+        end
+        if vim.wo[win].signcolumn == "no" then
+          vim.api.nvim_set_option_value("signcolumn", "yes", o)
+        end
+      end
+    end
+  end,
+})

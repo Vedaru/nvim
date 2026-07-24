@@ -1,32 +1,19 @@
--- ~/.config/nvim/lua/plugins/snacks.lua
-local project_root = function()
-  return require("config.session").project_root()
-end
+--- Snacks: picker, dashboard, terminal, statuscolumn, indent, scroll, etc.
+
+local S = require("config.session")
 
 return {
   {
     "folke/snacks.nvim",
     opts = {
-      explorer = {
-        enabled = false,
-      },
+      explorer = { enabled = false },
       picker = {
         hidden = true,
         ignored = true,
         follow = true,
-        jump = {
-          -- When selecting a buffer from the picker, switch to its existing
-          -- window instead of replacing the current window's buffer.
-          -- Prevents terminal window-local options (number=false) from
-          -- leaking into code-file windows.
-          reuse_win = true,
-        },
+        jump = { reuse_win = true },
         sources = {
-          git_diff = {
-            -- Suppress "Command failed" noise when outside a git repo.
-            -- The picker shows "No results" anyway — no need for a red error.
-            notify = false,
-          },
+          git_diff = { notify = false },
         },
       },
       dashboard = {
@@ -40,16 +27,7 @@ return {
   ╚═══╝  ╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝
           ]],
         },
-        -- 不显示快捷选项、q 退出 nvim 等行为已在 snacks 源码里改好
-        -- (defaults.sections 去掉 keys 段、preset.keys 清空、D:init q -> :qa)，
-        -- build.sh 会把改过的 snacks.nvim 一起打包，重装不丢。
       },
-      -- Disable auto_insert so terminal stays in normal mode after <Esc><Esc>,
-      -- allowing which-key's <Space> trigger to work.
-      -- Replace LazyVim's buggy term_nav() mappings with direct <cmd> variants.
-      -- Must include expr=true because snacks wraps string RHS in a function
-      -- whose return value is ignored without it.
-      -- auto_close=false: suppress "Terminal exited" notification on session switch
       terminal = {
         enabled = true,
         auto_insert = false,
@@ -65,52 +43,43 @@ return {
       },
     },
     keys = {
-      -- 查找类：基于 snacks.picker，统一使用 project_root()
-      {
-        "<leader>gd",
-        function()
-          Snacks.picker.git_diff({ cwd = project_root() })
-        end,
-        desc = "Git Diff (hunks)",
-      },
+      -- Picker: search
+      { "<leader>ff", function() Snacks.picker.files({ cwd = S.project_root() }) end,    desc = "Find Files" },
+      { "<leader>fg", function() Snacks.picker.grep({ cwd = S.project_root() }) end,     desc = "Live Grep" },
+      { "<leader>fb", function() Snacks.picker.buffers() end,                            desc = "Find Buffers" },
+      { "<leader>fr", function() Snacks.picker.recent() end,                             desc = "Recent Files" },
+      { "<leader>gd", function() Snacks.picker.git_diff({ cwd = S.project_root() }) end, desc = "Git Diff (hunks)" },
       {
         "<leader>gD",
         function()
-          Snacks.picker.git_diff({ cwd = project_root(), base = "origin", group = true })
+          Snacks.picker.git_diff({ cwd = S.project_root(), base = "origin", group = true })
         end,
         desc = "Git Diff (origin)",
       },
+      -- Picker: keymaps
       {
-        "<leader>ff",
+        "<leader>?",
         function()
-          require("snacks.picker").files({ cwd = project_root() })
+          Snacks.picker.keymaps({
+            transform = function(item)
+              local info = item.info
+              if info and info.what == "Lua" and info.source:sub(2):find("^vim/_core/") then
+                return false
+              end
+              if item.file then
+                local stat = vim.uv.fs_stat(item.file)
+                if not stat then
+                  local with_ext = item.file .. ".lua"
+                  if vim.uv.fs_stat(with_ext) then
+                    item.file = with_ext
+                  end
+                end
+              end
+              return true
+            end,
+          })
         end,
-        silent = true,
-        desc = "Find files",
-      },
-      {
-        "<leader>fg",
-        function()
-          require("snacks.picker").grep({ cwd = project_root() })
-        end,
-        silent = true,
-        desc = "Live grep",
-      },
-      {
-        "<leader>fb",
-        function()
-          require("snacks.picker").buffers()
-        end,
-        silent = true,
-        desc = "Find buffers",
-      },
-      {
-        "<leader>fr",
-        function()
-          require("snacks.picker").recent()
-        end,
-        silent = true,
-        desc = "Recent files",
+        desc = "Browse Keymaps",
       },
     },
   },
